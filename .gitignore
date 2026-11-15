@@ -1,0 +1,6 @@
+__pycache__/
+public/
+preview.html
+node_modules/
+.netlify/
+.env

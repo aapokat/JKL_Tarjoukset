@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="fi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jyväskylän tarjoukset</title>
+<meta name="description" content="Jyväskylän kauppojen myymäläalennukset yhdellä sivulla: vähintään 20 % alennukset, kuvat, suosikit ja hintavahdit sähköpostiin.">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800,900&display=swap">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap">
+<style>
+/* Light, airy shop layout: floating nav over a hero of today's real deals, a sidebar of filters, and product cards
+   with grey photo boxes and black pill buttons. The one loud element is the giant hero word. */
+:root{
+  --page:#F2F3F5; --surface:#FFFFFF; --photo:#ECEDF0; --ink:#18191C; --muted:#6B7078; --line:#E3E5E9;
+  --sale:#E5372B; --good:#1E8E5A; --pill:#18191C; --pill-ink:#FFFFFF;
+  --font:"Satoshi",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --display:"Cabinet Grotesk","Satoshi",system-ui,sans-serif;
+  --r-lg:28px; --r-md:18px; --r-sm:12px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{margin:0;overflow-x:hidden;background:var(--page);color:var(--ink);font:15px/1.5 var(--font);font-feature-settings:"tnum" 0}
+img{display:block;max-width:100%}
+a{color:inherit}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2.5px solid var(--ink);outline-offset:2px;border-radius:8px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+
+/* ---------- nav */
+.nav{position:sticky;top:12px;z-index:30;margin:12px auto 0;max-width:1200px;padding:0 20px}
+.nav-inner{display:flex;align-items:center;gap:16px;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  border-radius:20px;padding:10px 12px 10px 18px;box-shadow:0 1px 0 var(--line),0 8px 24px rgba(24,25,28,.06)}
+.logo{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:-.01em;text-decoration:none;white-space:nowrap}
+.logo svg{width:24px;height:24px}
+.links{display:flex;gap:4px;margin:0 auto}
+.links button{border:0;background:none;padding:8px 14px;border-radius:999px;font-size:14px;color:var(--muted);cursor:pointer}
+.links button[aria-current="true"]{color:var(--ink);font-weight:600;background:var(--page)}
+.icons{display:flex;gap:6px}
+.iconbtn{position:relative;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.iconbtn svg{width:19px;height:19px}
+.iconbtn .badge{position:absolute;top:-3px;right:-3px;min-width:18px;height:18px;border-radius:9px;background:var(--sale);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+
+/* ---------- hero: today's best deals behind one giant word */
+.hero{position:relative;max-width:1200px;margin:-64px auto 0;padding:0 20px}
+.hero-panel{--card-h:84px;position:relative;height:clamp(380px,46vw,520px);border-radius:var(--r-lg);overflow:hidden;background:#2A2C31}
+.collage{position:absolute;inset:0;display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(2,1fr);gap:10px;padding:84px 10px 10px}
+.collage a{background:#fff;border-radius:16px;overflow:hidden;position:relative}
+.collage img{width:100%;height:100%;object-fit:contain;padding:12%}
+.collage .cb{position:absolute;left:10px;top:10px;background:var(--sale);color:#fff;font-family:var(--display);font-weight:800;font-size:14px;border-radius:8px;padding:2px 7px}
+.hero-panel::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(24,25,28,.10) 0%,rgba(24,25,28,.05) 40%,rgba(24,25,28,.55) 100%);pointer-events:none}
+.bigword{font-family:var(--display);position:absolute;left:0;right:0;bottom:calc(var(--card-h) - .2em);z-index:2;text-align:center;margin:0;color:#fff;font-weight:900;
+  font-size:clamp(68px,16vw,220px);line-height:1;letter-spacing:-.045em;pointer-events:none;text-shadow:0 2px 30px rgba(0,0,0,.18)}
+.searchcard{position:absolute;z-index:3;left:68px;right:68px;bottom:0;background:var(--page);border-radius:var(--r-md) var(--r-md) 0 0;
+  padding:18px 22px 6px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.searchcard h2{margin:0;font-family:var(--display);font-size:23px;font-weight:800;letter-spacing:-.01em}
+.searchcard p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 5px 5px 16px;min-width:min(420px,100%)}
+.search svg{width:17px;height:17px;color:var(--muted);flex:none}
+.search input{flex:1;border:0;outline:0;background:none;font:inherit;font-size:15px;min-width:0;padding:6px 0}
+.pill{border:0;border-radius:999px;background:var(--pill);color:var(--pill-ink);font-weight:600;font-size:14px;padding:10px 20px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.pill.ghost{background:var(--surface);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.pill.small{padding:8px 14px;font-size:13px}
+
+/* ---------- shop: sidebar + grid */
+.shop{display:grid;grid-template-columns:250px 1fr;gap:36px;padding-top:34px}
+.side h3{font-family:var(--display);font-size:19px;font-weight:800;margin:0 0 10px;letter-spacing:-.01em}
+.side section+section{margin-top:26px}
+.catlist{list-style:none;margin:0;padding:0}
+.catlist button{width:100%;display:flex;align-items:center;gap:10px;border:0;background:none;padding:8px 10px;border-radius:12px;font-size:14px;color:var(--ink);cursor:pointer;text-align:left}
+.catlist button svg{width:17px;height:17px;flex:none;color:var(--muted)}
+.catlist button .n{margin-left:auto;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.catlist button[aria-pressed="true"]{background:var(--surface);font-weight:600;box-shadow:0 1px 0 var(--line)}
+.catlist button[aria-pressed="true"] svg{color:var(--ink)}
+.catlist .all .n{margin-left:auto;background:var(--sale);color:#fff;border-radius:7px;padding:1px 7px;font-weight:700}
+.chains{display:flex;flex-direction:column;gap:2px}
+.chain{border-radius:12px}
+.chain>label{display:flex;align-items:center;gap:10px;padding:7px 10px;font-size:14px;cursor:pointer;border-radius:12px}
+.chain>label:hover{background:var(--surface)}
+.chain input{accent-color:var(--ink);width:16px;height:16px;margin:0}
+.chain .n{margin-left:auto;color:var(--muted);font-size:12px}
+.chain .more{border:0;background:none;color:var(--muted);font-size:12px;padding:2px 10px 6px 36px;cursor:pointer;text-decoration:underline}
+.chain .stores{padding:0 0 6px 26px}
+.chain .stores label{display:flex;align-items:center;gap:8px;padding:4px 10px;font-size:13px;color:var(--ink);cursor:pointer}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--pill);color:#fff;border-color:var(--pill)}
+.side select{width:100%;font:inherit;font-size:14px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 10px;color:var(--ink)}
+.side .hint{color:var(--muted);font-size:12px;margin:8px 2px 0}
+
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;min-height:40px}
+.toolbar .count{font-size:14px;color:var(--muted)}
+.toolbar .count strong{color:var(--ink)}
+.activechips{display:flex;gap:6px;flex-wrap:wrap}
+.activechips button{border:0;background:var(--surface);border-radius:999px;padding:5px 10px 5px 12px;font-size:13px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--line)}
+.filterbtn{display:none;margin-left:auto}
+
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 22px}
+.card{min-width:0;display:flex;flex-direction:column}
+.media{position:relative;background:var(--photo);border-radius:var(--r-md);aspect-ratio:1/0.92;overflow:hidden}
+.media .img{position:absolute;inset:0;display:block}
+.media img{width:100%;height:100%;object-fit:contain;padding:13%;mix-blend-mode:multiply}
+.media .ph{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-weight:600;font-size:14px;text-align:center;padding:20px}
+.chip{position:absolute;top:12px;right:12px;background:var(--surface);border-radius:999px;font-size:12px;font-weight:500;padding:4px 10px;max-width:calc(100% - 70px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:0;cursor:default}
+button.chip{cursor:pointer}
+.fav{position:absolute;top:10px;left:10px;width:36px;height:36px;border-radius:50%;border:0;background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.fav svg{width:18px;height:18px}
+.fav[aria-pressed="true"] svg{fill:var(--sale);stroke:var(--sale)}
+.off{position:absolute;left:12px;bottom:12px;background:var(--sale);color:#fff;font-family:var(--display);font-weight:800;font-size:15px;border-radius:9px;padding:3px 8px;letter-spacing:-.01em}
+.best{position:absolute;right:12px;bottom:12px;background:var(--good);color:#fff;font-weight:700;font-size:12px;border-radius:9px;padding:3px 8px}
+.body{padding:14px 2px 0;display:flex;flex-direction:column;flex:1}
+.row1{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.name{margin:0;font-size:15px;font-weight:700;line-height:1.3;letter-spacing:-.005em;overflow-wrap:anywhere}
+.name a{text-decoration:none}
+.name a:hover{text-decoration:underline}
+.price{font-family:var(--display);font-size:19px;font-weight:800;white-space:nowrap;letter-spacing:-.01em}
+.row2{display:flex;gap:12px;justify-content:space-between;align-items:baseline;margin-top:4px;font-size:12.5px;color:var(--muted)}
+.row2 .where{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row2 s{white-space:nowrap}
+.note{margin-top:6px;font-size:12.5px;color:var(--ink)}
+.cheaper{margin-top:4px;font-size:12.5px;color:var(--good);font-weight:600}
+.storelist{margin-top:6px;font-size:12.5px;color:var(--muted)}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto;padding-top:14px}
+.card.hit .media{box-shadow:inset 0 0 0 3px var(--sale)}
+
+.pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:40px 0 0;padding-top:20px;border-top:1px solid var(--line)}
+.pager .nums{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.pager button{border:0;background:none;min-width:34px;height:34px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
+.pager button[aria-current="page"]{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.pager button:disabled{opacity:.35;cursor:default}
+.pager .step{display:inline-flex;align-items:center;gap:6px;padding:0 6px}
+.pager .step svg{width:16px;height:16px}
+.empty{padding:60px 20px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:6px}
+
+/* ---------- carousel */
+.rail{padding-top:84px}
+.railhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.railhead h2{margin:0;font-family:var(--display);font-size:clamp(26px,3.2vw,36px);font-weight:800;letter-spacing:-.02em}
+.arrows{display:flex;gap:6px}
+.arrows button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center}
+.arrows svg{width:18px;height:18px}
+.track{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 66px)/4);gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px}
+.track::-webkit-scrollbar{display:none}
+.track .card{scroll-snap-align:start}
+
+/* ---------- dark banner */
+.banner{margin-top:96px;background:#202125;color:#fff;border-radius:var(--r-lg);padding:40px 44px;display:grid;grid-template-columns:1.2fr 1fr;gap:30px;align-items:end}
+.banner h2{margin:0 0 22px;font-family:var(--display);font-size:clamp(30px,3.8vw,48px);line-height:1.04;font-weight:800;letter-spacing:-.02em;max-width:13ch}
+.banner form{display:flex;background:#fff;border-radius:999px;padding:5px;max-width:420px}
+.banner input{flex:1;border:0;outline:0;background:none;font:inherit;padding:8px 14px;min-width:0}
+.banner .pill{background:var(--pill)}
+.banner .side-text strong{display:block;font-size:15px;margin-bottom:6px}
+.banner .side-text p{margin:0;color:#B9BDC6;font-size:14px;max-width:46ch}
+.banner .msg{margin:10px 4px 0;font-size:13px;color:#D7DAE0;min-height:1.2em}
+
+/* ---------- footer */
+.foot{display:grid;grid-template-columns:1fr 1fr 2fr;gap:30px;padding:56px 0 60px;font-size:14px}
+.foot h4{margin:0 0 10px;font-family:var(--display);font-size:17px;font-weight:800}
+.foot ul{list-style:none;margin:0;padding:0;color:var(--muted)}
+.foot li{margin:4px 0}
+.foot button.link{border:0;background:none;padding:0;color:var(--muted);cursor:pointer;font-size:14px}
+.foot button.link:hover{color:var(--ink);text-decoration:underline}
+.foot .src{color:var(--muted);font-size:13px}
+.foot .src h4{color:var(--ink)}
+.price small{font-family:var(--font);font-size:12px;font-weight:500;color:var(--muted);margin-left:2px}
+.foot .src p{margin:0 0 8px;max-width:60ch}
+
+/* ---------- drawers (alerts, filters on mobile) */
+.scrim{position:fixed;inset:0;background:rgba(24,25,28,.35);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--page);z-index:41;transform:translateX(100%);transition:transform .25s ease,visibility .25s;
+  display:flex;flex-direction:column;box-shadow:-20px 0 40px rgba(24,25,28,.12);visibility:hidden}
+.drawer.on{transform:none;visibility:visible}
+.drawer header{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 8px}
+.drawer header h2{margin:0;font-family:var(--display);font-size:26px;font-weight:800;letter-spacing:-.01em}
+.drawer .content{overflow:auto;padding:8px 22px 30px}
+.drawer p.lead{margin:0 0 16px;color:var(--muted);font-size:14px}
+.types{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.types button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer}
+.types button[aria-pressed="true"]{background:var(--pill);color:#fff;border-color:var(--pill)}
+.form{display:grid;gap:12px}
+.form label{display:grid;gap:5px;font-size:13px;color:var(--muted)}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form input,.form select{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
+.form .pill{justify-self:start}
+.formnote{font-size:13px;color:var(--ink);min-height:1.2em;margin:2px 0 0}
+.wlist{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:8px}
+.wlist li{background:var(--surface);border-radius:14px;padding:10px 10px 10px 14px;display:flex;align-items:center;gap:10px;font-size:14px}
+.wlist .k{font-size:12px;color:var(--muted);display:block}
+.wlist .n{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+.wlist button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px}
+.linkbtn{border:0;background:none;padding:0;text-decoration:underline;cursor:pointer;font-size:13px}
+.side-drawer .content .side{display:block}
+
+@media (max-width:1060px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .track{grid-auto-columns:calc((100% - 44px)/3)}
+}
+@media (max-width:860px){
+  .shop{grid-template-columns:1fr}
+  .shop>.side{display:none}
+  .filterbtn{display:inline-flex}
+  .links{display:none}
+  .icons{margin-left:auto}
+  .searchcard{left:16px;right:16px}
+  .collage{grid-template-columns:repeat(3,1fr);padding-top:74px}
+  .collage a:nth-child(n+7){display:none}
+  .banner{grid-template-columns:1fr;padding:30px 26px}
+  .foot{grid-template-columns:1fr 1fr}
+  .foot .src{grid-column:1/-1}
+}
+@media (max-width:560px){
+  .wrap,.nav,.hero{padding:0 12px}
+  .nav-inner{padding:8px 8px 8px 14px}
+  .iconbtn{width:38px;height:38px}
+  .hero{margin-top:-60px}
+  .hero-panel{height:470px;--card-h:150px}
+  .bigword{font-size:19vw}
+  .searchcard{left:10px;right:10px;padding:14px 14px 6px}
+  .searchcard h2{font-size:18px}
+  .search{min-width:100%}
+  .grid{gap:24px 12px}
+  .name{font-size:14px}
+  .price{font-size:15px}
+  .row1{flex-direction:column;gap:2px}
+  .actions{grid-template-columns:1fr}
+  .actions .pill.ghost{display:none}
+  .track{grid-auto-columns:72%}
+  .logo span{display:none}
+}
+@media (prefers-reduced-motion:reduce){.drawer,.scrim{transition:none}}
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Päävalikko">
+  <div class="nav-inner">
+    <a class="logo" href="#" aria-label="Jyväskylän tarjoukset, alkuun">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="8.5" r="1.6" fill="currentColor"/></svg>
+      <span>Jyväskylän tarjoukset</span>
+    </a>
+    <div class="links">
+      <button type="button" data-view="all" aria-current="true">Tarjoukset</button>
+      <button type="button" data-view="fav">Suosikit</button>
+      <button type="button" data-open="watch">Hintavahdit</button>
+    </div>
+    <div class="icons">
+      <button class="iconbtn" type="button" data-focus-search aria-label="Hae tuotetta">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </button>
+      <button class="iconbtn" type="button" data-open="watch" aria-label="Hintavahdit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
+        <span class="badge" id="watchBadge" hidden></span>
+      </button>
+      <button class="iconbtn" type="button" data-view="fav" aria-label="Suosikit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-9.3-9.2C1.4 7.4 3.6 4 7 4c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8C19.5 15.4 12 20 12 20z"/></svg>
+        <span class="badge" id="favBadge" hidden></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="hero-panel">
+    <div class="collage" id="collage" aria-hidden="true"></div>
+    <h1 class="bigword">Tarjoukset</h1>
+    <div class="searchcard">
+      <div>
+        <h2>Jyväskylän myymäläalennukset</h2>
+        <p id="heroSub">Vähintään 20 % alennukset, päivitetään joka aamu.</p>
+      </div>
+      <label class="search" for="q">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Hae tuotetta tai merkkiä" autocomplete="off">
+        <button class="pill small" type="button" id="qBtn">Hae</button>
+      </label>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="shop">
+    <aside class="side" id="side" aria-label="Rajaukset"></aside>
+    <section aria-label="Tarjoukset">
+      <div class="toolbar">
+        <span class="count" id="count"></span>
+        <div class="activechips" id="activeChips"></div>
+        <button class="pill ghost small filterbtn" type="button" data-open="filters">Rajaa</button>
+      </div>
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" hidden></div>
+      <nav class="pager" id="pager" aria-label="Sivut"></nav>
+    </section>
+  </div>
+
+  <section class="rail" aria-labelledby="railTitle">
+    <div class="railhead">
+      <h2 id="railTitle">Isoimmat alet juuri nyt</h2>
+      <div class="arrows">
+        <button type="button" data-rail="-1" aria-label="Edelliset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6-6-6 6 6 6"/></svg></button>
+        <button type="button" data-rail="1" aria-label="Seuraavat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="track" id="track"></div>
+  </section>
+
+  <section class="banner" aria-labelledby="bannerTitle">
+    <div>
+      <h2 id="bannerTitle">Älä missaa seuraavaa alea</h2>
+      <form id="bannerForm" autocomplete="on">
+        <input name="email" type="email" placeholder="Sähköpostisi" aria-label="Sähköposti" required>
+        <button class="pill" type="submit">Luo vahti</button>
+      </form>
+      <p class="msg" id="bannerMsg" role="status"></p>
+    </div>
+    <div class="side-text">
+      <strong>Hintavahti kertoo, kun ale osuu</strong>
+      <p>Valitse tuote, merkki, tuoteryhmä tai kauppa. Saat aamulla yhden koosteviestin uusista osumista, ja vahdin voi poistaa jokaisen viestin linkistä.</p>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>
+      <h4>Sivusto</h4>
+      <ul>
+        <li><button class="link" type="button" data-view="all">Kaikki tarjoukset</button></li>
+        <li><button class="link" type="button" data-view="fav">Suosikit</button></li>
+        <li><button class="link" type="button" data-open="watch">Hintavahdit</button></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Kaupat</h4>
+      <ul id="footStores"></ul>
+    </div>
+    <div class="src">
+      <h4>Mistä tiedot tulevat</h4>
+      <div id="sources"></div>
+      <p>Hinnat kopioidaan kauppojen omilta sivuilta. Tarkista hinta aina kaupassa. Suosikit säilyvät tämän selainistunnon ajan, hintavahdit tässä selaimessa.</p>
+    </div>
+  </footer>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="watchDrawer" aria-labelledby="watchTitle" aria-modal="true" role="dialog">
+  <header><h2 id="watchTitle">Hintavahdit</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="content">
+    <p class="lead" id="watchLead">Sivua käytetään ilman kirjautumista. Vahdit tallentuvat tähän selaimeen ja osumat merkitään punaisella reunalla. Jos haluat ilmoitukset sähköpostiin, kirjoita osoitteesi.</p>
+    <form id="watchForm" class="form" autocomplete="off">
+      <div class="types" role="radiogroup" aria-label="Mitä vahditaan" id="types"></div>
+      <label id="fQ">Tuote tai hakusana<input name="q" maxlength="60" placeholder="esim. juhla mokka"></label>
+      <label id="fBrand" hidden>Merkki tai tuoteperhe<input name="brand" maxlength="60" list="brandList" placeholder="esim. Pirkka, Valio, Fazer"></label>
+      <label id="fCat" hidden>Tuoteryhmä<select name="cat"></select></label>
+      <label id="fPid" hidden>Tuote<input name="pidLabel" readonly></label>
+      <label id="fStore">Kauppa<select name="store"><option value="">Mikä tahansa kauppa</option></select></label>
+      <div class="two">
+        <label>Hinta enintään €<input name="max" inputmode="decimal" maxlength="8" placeholder="valinnainen"></label>
+        <label>Alennus vähintään %<input name="minPct" inputmode="numeric" maxlength="2" placeholder="valinnainen"></label>
+      </div>
+      <label id="mailField" hidden>Sähköposti (valinnainen)<input name="email" type="email" maxlength="120" placeholder="ilmoitukset sähköpostiin" autocomplete="email"></label>
+      <label hidden aria-hidden="true">Älä täytä<input name="website" tabindex="-1" autocomplete="off"></label>
+      <button type="submit" class="pill">Lisää vahti</button>
+      <p class="formnote" id="watchNote" role="status"></p>
+    </form>
+    <datalist id="brandList"></datalist>
+    <ul class="wlist" id="watchList"></ul>
+    <p class="formnote" id="watchOnlyRow" hidden><button type="button" class="linkbtn" id="watchOnly">Näytä vain vahtien osumat</button></p>
+  </div>
+</aside>
+<aside class="drawer side-drawer" id="filterDrawer" aria-labelledby="filterTitle" aria-modal="true" role="dialog">
+  <header><h2 id="filterTitle">Rajaa tarjouksia</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="content"><div class="side" id="sideMobile"></div><p><button class="pill" type="button" data-close>Näytä tarjoukset</button></p></div>
+</aside>
+
+<script>
+const EMBEDDED = __DATA__;
+const CONFIG = __CONFIG__;
+const $ = id => document.getElementById(id);
+const fmt = n => n.toFixed(2).replace(".", ",");
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm = s => String(s || "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "");
+function keep(storage) {   // localStorage for settings and alerts, sessionStorage for favourites
+  return {
+    get(k, d) { try { const v = JSON.parse(storage.getItem("jkl-" + k) || "null"); return v == null ? d : v; } catch (e) { return d; } },
+    set(k, v) { try { storage.setItem("jkl-" + k, JSON.stringify(v)); } catch (e) {} }
+  };
+}
+const store = keep(window.localStorage), session = keep(window.sessionStorage);
+
+// Line icons for the product groups (24x24, stroke).
+const ICON = {
+  "Hedelmät ja vihannekset": '<path d="M12 7c-4-3-9 0-8 6 1 5 4 8 8 7 4 1 7-2 8-7 1-6-4-9-8-6z"/><path d="M12 7c0-2 1-4 3-4"/>',
+  "Liha ja kala": '<path d="M3 12c3-5 9-6 14-3l4-2v10l-4-2c-5 3-11 2-14-3z"/><circle cx="8" cy="11" r="1"/>',
+  "Maito ja juusto": '<path d="M8 3h8v3l2 3v12H6V9l2-3z"/><path d="M6 13h12"/>',
+  "Leivät ja leivonnaiset": '<path d="M4 11a4 4 0 0 1 4-6h8a4 4 0 0 1 4 6v8H4z"/><path d="M9 9v3m3-3v3m3-3v3"/>',
+  "Valmisruoat ja pakasteet": '<path d="M12 2v20M4 6l16 12M20 6 4 18"/>',
+  "Kuivat, mausteet ja kastikkeet": '<rect x="6" y="7" width="12" height="14" rx="2"/><path d="M8 3h8v4H8z"/>',
+  "Makeiset ja naposteltavat": '<circle cx="12" cy="12" r="4"/><path d="M8 12 3 9v6l5-3m8 0 5-3v6l-5-3"/>',
+  "Juomat ja kahvi": '<path d="M5 8h12v5a6 6 0 0 1-12 0z"/><path d="M17 9h2a2 2 0 0 1 0 4h-2M8 2v3m4-3v3"/>',
+  "Ruoka, muut": '<path d="M4 9h16l-2 11H6z"/><path d="M8 9l4-6 4 6"/>',
+  "Lemmikit": '<circle cx="7" cy="9" r="2"/><circle cx="17" cy="9" r="2"/><circle cx="10" cy="5" r="2"/><circle cx="14" cy="5" r="2"/><path d="M7 17c0-3 2-5 5-5s5 2 5 5c0 2-2 3-5 2-3 1-5 0-5-2z"/>',
+  "Lapset ja lelut": '<circle cx="12" cy="13" r="7"/><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M10 15c1 1 3 1 4 0"/>',
+  "Koti, keittiö ja siivous": '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
+  "Vaatteet ja kengät": '<path d="M8 3 3 6l2 5 3-1v11h8V10l3 1 2-5-5-3c-1 2-2 3-4 3S9 5 8 3z"/>',
+  "Kauneus ja terveys": '<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>',
+  "Urheilu ja vapaa-aika": '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>',
+  "Elektroniikka ja kodinkoneet": '<rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8"/>',
+  "Työkalut, remontti ja autoilu": '<path d="M14 6a4 4 0 0 0 5 5l-9 9-3-3 9-9a4 4 0 0 0-2-2z"/>',
+  "Piha, kukat ja puutarha": '<circle cx="12" cy="9" r="3"/><path d="M12 12v9M9 6a3 3 0 1 1 6 0M8 18c2 0 4-1 4-3m0 3c2 0 4-1 4-3"/>',
+  "Kirjat ja toimisto": '<path d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-4a3 3 0 0 0-3 3"/>',
+  "Muut": '<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'
+};
+const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name] || ICON["Muut"]}</svg>`;
+
+let D, offers = [], STORES = [], CATS = [], CHAINS = [];
+const PER_PAGE = 24;
+const state = {q: "", cat: store.get("cat", ""), sort: store.get("sort", "pct"), minPct: 0, page: 1, view: "all", on: null, watchOnly: false};
+let favs = new Set(session.get("favs", []));
+const saveFavs = () => session.set("favs", [...favs]);
+
+function boot(data) {
+  D = data; CATS = data.cats; STORES = data.stores;
+  CHAINS = [...new Set(STORES.map(s => s.chain))];
+  offers = data.offers.map((o, i) => {
+    const names = o[0].map(j => STORES[j].name);
+    return {i, names, cat: CATS[o[1]], name: o[2], price: o[3], unit: o[4], was: o[5], pct: o[6], note: o[7], valid: o[8],
+            url: o[9], img: o[10], pid: o[11], brand: o[12], best: o[13], bestPrice: o[14],
+            id: [o[11] || o[2], o[3], o[7]].join("|"),
+            key: norm(o[2] + " " + o[12] + " " + names.join(" "))};
+  });
+  const saved = store.get("stores", null), known = store.get("known", []);
+  state.on = new Set(STORES.map(s => s.name).filter(n => !saved || saved.includes(n) || !known.includes(n)));
+  store.set("known", STORES.map(s => s.name));
+  if (!CATS.includes(state.cat)) state.cat = "";
+  state.minPct = Math.max(data.minPct || 0, store.get("minPct", 0));
+  const when = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("fi-FI", {weekday: "long", day: "numeric", month: "numeric"}).replace(/\.$/, ""); };
+  const dates = Object.values(data.sources || {}).filter(Boolean).sort();
+  $("heroSub").textContent = "Vähintään " + (data.minPct || 20) + " % alennukset " + STORES.length + " kaupasta." + (dates.length ? " Päivitetty " + when(dates[dates.length - 1]) + "." : "");
+  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail();
+}
+
+// ---------- hero collage: the twelve biggest discounts that have a photo, from as many chains as possible
+function renderCollage() {
+  const pick = [], used = {};
+  const pool = offers.filter(o => o.img && o.pct).sort((a, b) => b.pct - a.pct);
+  for (const o of pool) {
+    const ch = STORES.find(s => s.name === o.names[0]).chain;
+    if ((used[ch] || 0) >= 3) continue;
+    used[ch] = (used[ch] || 0) + 1; pick.push(o);
+    if (pick.length === 12) break;
+  }
+  $("collage").innerHTML = pick.map(o => `<a href="${esc(o.url || "#")}" tabindex="-1" target="_blank" rel="noopener"><img src="${esc(o.img)}" alt="" loading="eager" referrerpolicy="no-referrer" onerror="this.parentNode.style.visibility='hidden'"><span class="cb">−${o.pct} %</span></a>`).join("");
+}
+
+// ---------- sidebar (also used inside the mobile filter drawer)
+const saveStores = () => store.set("stores", [...state.on]);
+const visible = o => o.names.some(n => state.on.has(n));
+const openChains = new Set();
+function sideHTML() {
+  const counts = {}; let total = 0;
+  for (const o of offers) if (visible(o) && (o.pct || 0) >= state.minPct) { counts[o.cat] = (counts[o.cat] || 0) + 1; total++; }
+  const cats = `<section><h3>Tuoteryhmä</h3><ul class="catlist">
+      <li class="all"><button type="button" data-cat="" aria-pressed="${state.cat === ""}">${icon("Ruoka, muut")}Kaikki tarjoukset<span class="n">${total}</span></button></li>
+      ${CATS.filter(c => counts[c]).map(c => `<li><button type="button" data-cat="${esc(c)}" aria-pressed="${state.cat === c}">${icon(c)}${esc(c)}<span class="n">${counts[c]}</span></button></li>`).join("")}
+    </ul></section>`;
+  const chains = `<section><h3>Kaupat</h3><div class="chains">${CHAINS.map(ch => {
+      const mine = STORES.filter(s => s.chain === ch), on = mine.filter(s => state.on.has(s.name)).length;
+      const n = mine.reduce((a, s) => a + s.count, 0);
+      return `<div class="chain"><label><input type="checkbox" data-chain="${esc(ch)}"${on === mine.length ? " checked" : ""}${on && on < mine.length ? ' data-mixed="1"' : ""}> ${esc(ch)}${mine.length > 1 ? ` <span class="n">${on}/${mine.length}</span>` : ` <span class="n">${n}</span>`}</label>
+        ${mine.length > 1 ? `<button type="button" class="more" data-more="${esc(ch)}" aria-expanded="${openChains.has(ch)}">${openChains.has(ch) ? "Piilota kaupat" : "Valitse kaupat"}</button>
+        <div class="stores"${openChains.has(ch) ? "" : " hidden"}>${mine.map(s => `<label><input type="checkbox" data-store="${esc(s.name)}"${state.on.has(s.name) ? " checked" : ""}> ${esc(s.name.replace(ch + " ", ""))}</label>`).join("")}</div>` : ""}
+      </div>`;
+    }).join("")}</div></section>`;
+  const pcts = [D.minPct || 20, 30, 40, 50, 70].filter((v, i, a) => a.indexOf(v) === i);
+  const disc = `<section><h3>Alennus vähintään</h3><div class="seg">${pcts.map(p => `<button type="button" data-min="${p}" aria-pressed="${state.minPct === p}">${p} %</button>`).join("")}</div></section>`;
+  const sort = `<section><h3>Järjestys</h3><select data-sort aria-label="Järjestys">
+      ${[["pct", "Suurin alennus ensin"], ["low", "Halvin ensin"], ["best", "Halvimmat vertailussa ensin"], ["az", "Aakkosjärjestys"]].map(([v, l]) => `<option value="${v}"${state.sort === v ? " selected" : ""}>${l}</option>`).join("")}
+    </select><p class="hint">Vihreä merkki: sama tuote on tarjouksessa myös muualla, ja tämä on halvin.</p></section>`;
+  return cats + chains + disc + sort;
+}
+function renderSide() {
+  for (const id of ["side", "sideMobile"]) {
+    const el = $(id); el.innerHTML = sideHTML();
+    el.querySelectorAll("[data-mixed]").forEach(c => { c.indeterminate = true; });
+  }
+}
+function onSide(e) {
+  const t = e.target;
+  const cat = t.closest("[data-cat]");
+  if (cat) { state.cat = cat.dataset.cat; store.set("cat", state.cat); state.page = 1; refresh(); return; }
+  const more = t.closest("[data-more]");
+  if (more) { const ch = more.dataset.more; openChains.has(ch) ? openChains.delete(ch) : openChains.add(ch); renderSide(); return; }
+  const min = t.closest("[data-min]");
+  if (min) { state.minPct = +min.dataset.min; store.set("minPct", state.minPct); state.page = 1; refresh(); return; }
+}
+function onSideChange(e) {
+  const t = e.target;
+  if (t.dataset.chain) {
+    const mine = STORES.filter(s => s.chain === t.dataset.chain);
+    mine.forEach(s => t.checked ? state.on.add(s.name) : state.on.delete(s.name));
+  } else if (t.dataset.store) {
+    t.checked ? state.on.add(t.dataset.store) : state.on.delete(t.dataset.store);
+  } else if (t.matches("[data-sort]")) {
+    state.sort = t.value; store.set("sort", state.sort);
+  } else return;
+  saveStores(); state.page = 1; refresh();
+}
+for (const id of ["side", "sideMobile"]) { $(id).addEventListener("click", onSide); $(id).addEventListener("change", onSideChange); }
+function refresh() { renderSide(); render(); }
+
+// ---------- cards
+function chainOf(name) { const s = STORES.find(x => x.name === name); return s ? s.chain : name; }
+function card(o, opts) {
+  const shown = o.names.filter(n => state.on.has(n));
+  const list = shown.length ? shown : o.names;
+  const chains = [...new Set(list.map(chainOf))];
+  const chip = list.length === 1 ? `<span class="chip" title="${esc(list[0])}">${esc(chains[0])}</span>`
+    : `<button type="button" class="chip" data-stores="${o.i}" title="${esc(list.join(", "))}">${list.length} kauppaa</button>`;
+  const where = list.length === 1 ? list[0] : chains.join(", ");
+  const link = o.url ? `href="${esc(o.url)}" target="_blank" rel="noopener"` : "";
+  const fav = favs.has(o.id);
+  const shortUnit = /^[a-zäö]{1,4}$/i.test(o.unit || "");
+  const price = o.price ? fmt(o.price) + " €" + (shortUnit ? `<small>/${esc(o.unit)}</small>` : "") : "−" + o.pct + " %";
+  return `<article class="card${isHit(o) ? " hit" : ""}">
+    <div class="media">
+      ${o.url ? `<a class="img" ${link} tabindex="-1" aria-hidden="true">` : `<div class="img">`}${o.img ? `<img src="${esc(o.img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ph',textContent:'Ei kuvaa'}))">` : `<span class="ph">${esc(o.cat)}</span>`}${o.url ? "</a>" : "</div>"}
+      <button type="button" class="fav" data-fav="${o.i}" aria-pressed="${fav}" aria-label="${fav ? "Poista suosikeista" : "Lisää suosikkeihin"}: ${esc(o.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-9.3-9.2C1.4 7.4 3.6 4 7 4c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8C19.5 15.4 12 20 12 20z"/></svg></button>
+      ${chip}
+      ${o.pct && o.price ? `<span class="off">−${o.pct} %</span>` : ""}
+      ${o.best === 1 ? `<span class="best">Edullisin</span>` : ""}
+    </div>
+    <div class="body">
+      <div class="row1"><h3 class="name">${o.url ? `<a ${link}>${esc(o.name)}</a>` : esc(o.name)}</h3><span class="price">${price}</span></div>
+      <div class="row2"><span class="where" title="${esc(list.join(", "))}">${esc(o.brand ? o.brand + ", " + where : where)}</span>${o.was ? `<s>${fmt(o.was)} €</s>` : ""}</div>
+      ${o.note || (o.unit && !shortUnit) || o.valid ? `<div class="note">${esc([o.note, shortUnit ? "" : o.unit, o.valid].filter(Boolean).join(". "))}</div>` : ""}
+      ${o.best === 0 ? `<div class="cheaper">Muualla ${fmt(o.bestPrice)} €${/kpl =/.test(o.note) ? " kappaleelta" : ""}</div>` : ""}
+      ${opts && opts.compact ? "" : `<div class="actions"><button type="button" class="pill ghost small" data-watch="${o.i}">Vahdi</button>${o.url ? `<a class="pill small" ${link}>Kaupan sivulle</a>` : `<button type="button" class="pill small" data-fav="${o.i}">${fav ? "Suosikeissa" : "Suosikiksi"}</button>`}</div>`}
+    </div>
+  </article>`;
+}
+function filtered() {
+  const words = norm(state.q).split(/\s+/).filter(Boolean);
+  let list = offers.filter(o => visible(o) && (o.pct || 0) >= state.minPct && (!state.cat || o.cat === state.cat) &&
+    words.every(w => o.key.includes(w)) && (!state.watchOnly || isHit(o)) && (state.view !== "fav" || favs.has(o.id)));
+  const byName = (a, b) => a.name.localeCompare(b.name, "fi");
+  if (state.sort === "pct") list.sort((a, b) => (b.pct || 0) - (a.pct || 0) || byName(a, b));
+  if (state.sort === "low") list.sort((a, b) => (a.price ?? 1e9) - (b.price ?? 1e9) || byName(a, b));
+  if (state.sort === "best") list.sort((a, b) => ((b.best === 1) - (a.best === 1)) || (b.pct || 0) - (a.pct || 0) || byName(a, b));
+  if (state.sort === "az") list.sort(byName);
+  return list;
+}
+function render() {
+  const list = filtered();
+  const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
+  state.page = Math.min(state.page, pages);
+  const slice = list.slice((state.page - 1) * PER_PAGE, state.page * PER_PAGE);
+  $("grid").innerHTML = slice.map(o => card(o)).join("");
+  $("count").innerHTML = `<strong>${list.length.toLocaleString("fi-FI")}</strong> ${state.view === "fav" ? "suosikkia" : "tarjousta"}`;
+  const chips = [];
+  if (state.view === "fav") chips.push(["view", "Suosikit"]);
+  if (state.watchOnly) chips.push(["watch", "Vahtien osumat"]);
+  if (state.cat) chips.push(["cat", state.cat]);
+  if (state.q.trim()) chips.push(["q", "”" + state.q.trim() + "”"]);
+  $("activeChips").innerHTML = chips.map(([k, l]) => `<button type="button" data-clear="${k}" aria-label="Poista rajaus ${esc(l)}">${esc(l)} ×</button>`).join("");
+  const empty = $("empty");
+  empty.hidden = list.length > 0;
+  if (!list.length) empty.innerHTML = state.view === "fav" && !favs.size
+    ? "<strong>Ei vielä suosikkeja</strong>Napauta sydäntä tarjouksen kuvassa. Suosikit säilyvät tämän selainistunnon ajan."
+    : "<strong>Ei tarjouksia näillä rajauksilla</strong>Kokeile toista hakusanaa, pienempää alennusrajaa tai valitse lisää kauppoja.";
+  renderPager(pages);
+  document.querySelectorAll("[data-view]").forEach(b => { if (b.closest(".links")) b.setAttribute("aria-current", String(b.dataset.view === state.view)); });
+  $("favBadge").hidden = !favs.size; $("favBadge").textContent = favs.size;
+  renderWatchCount();
+}
+function renderPager(pages) {
+  const p = state.page, el = $("pager");
+  if (pages <= 1) { el.innerHTML = ""; return; }
+  const nums = [];
+  for (let i = 1; i <= pages; i++) if (i <= 3 || i > pages - 3 || Math.abs(i - p) <= 1) nums.push(i); else if (nums[nums.length - 1] !== "…") nums.push("…");
+  el.innerHTML = `<button type="button" class="step" data-page="${p - 1}"${p === 1 ? " disabled" : ""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6-6-6 6 6 6"/></svg>Edellinen</button>
+    <div class="nums">${nums.map(n => n === "…" ? `<span aria-hidden="true">…</span>` : `<button type="button" data-page="${n}"${n === p ? ' aria-current="page"' : ""}>${n}</button>`).join("")}</div>
+    <button type="button" class="step" data-page="${p + 1}"${p === pages ? " disabled" : ""}>Seuraava<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>`;
+}
+$("pager").addEventListener("click", e => {
+  const b = e.target.closest("[data-page]"); if (!b || b.disabled) return;
+  state.page = +b.dataset.page; render();
+  document.querySelector(".shop").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+});
+$("activeChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-clear]"); if (!b) return;
+  const k = b.dataset.clear;
+  if (k === "view") state.view = "all";
+  if (k === "watch") state.watchOnly = false;
+  if (k === "cat") { state.cat = ""; store.set("cat", ""); }
+  if (k === "q") { state.q = ""; $("q").value = ""; }
+  state.page = 1; refresh();
+});
+
+// ---------- rail: favourites if there are any, otherwise the biggest food discounts
+const FOOD = new Set(["Hedelmät ja vihannekset", "Liha ja kala", "Maito ja juusto", "Leivät ja leivonnaiset", "Valmisruoat ja pakasteet", "Kuivat, mausteet ja kastikkeet", "Makeiset ja naposteltavat", "Juomat ja kahvi", "Ruoka, muut"]);
+function renderRail() {
+  let list, title;
+  if (favs.size) { list = offers.filter(o => favs.has(o.id)); title = "Suosikkisi"; }
+  else {
+    const seen = new Set();
+    list = offers.filter(o => FOOD.has(o.cat) && o.img && o.price && visible(o)).sort((a, b) => (b.pct || 0) - (a.pct || 0))
+      .filter(o => { const k = norm(o.name); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 16);
+    title = "Isoimmat ruoka-alet juuri nyt";
+  }
+  $("railTitle").textContent = title;
+  $("track").innerHTML = list.map(o => card(o)).join("");
+}
+document.querySelectorAll("[data-rail]").forEach(b => b.addEventListener("click", () => {
+  const t = $("track"); t.scrollBy({left: +b.dataset.rail * t.clientWidth * 0.9, behavior: "smooth"});
+}));
+
+// ---------- card actions (grid and rail)
+function onCards(e) {
+  const f = e.target.closest("[data-fav]");
+  if (f) {
+    const o = offers[+f.dataset.fav];
+    favs.has(o.id) ? favs.delete(o.id) : favs.add(o.id);
+    saveFavs(); render(); renderRail(); return;
+  }
+  const s = e.target.closest("[data-stores]");
+  if (s) {
+    const o = offers[+s.dataset.stores], body = s.closest(".card").querySelector(".body");
+    const old = body.querySelector(".storelist");
+    if (old) { old.remove(); return; }
+    body.querySelector(".row2").insertAdjacentHTML("afterend", `<div class="storelist">${o.names.map(esc).join(", ")}</div>`);
+    return;
+  }
+  const w = e.target.closest("[data-watch]");
+  if (w) watchProduct(offers[+w.dataset.watch]);
+}
+$("grid").addEventListener("click", onCards);
+$("track").addEventListener("click", onCards);
+
+// ---------- views, search, drawers
+document.addEventListener("click", e => {
+  const v = e.target.closest("[data-view]");
+  if (v) { state.view = v.dataset.view; state.page = 1; render(); document.querySelector(".shop").scrollIntoView({behavior: "smooth", block: "start"}); return; }
+  const o = e.target.closest("[data-open]");
+  if (o) { openDrawer(o.dataset.open === "watch" ? "watchDrawer" : "filterDrawer"); return; }
+  if (e.target.closest("[data-close]") || e.target === $("scrim")) closeDrawers();
+  if (e.target.closest("[data-focus-search]")) { $("q").focus(); $("q").scrollIntoView({block: "center"}); }
+});
+let lastFocus = null;
+function openDrawer(id) {
+  lastFocus = document.activeElement;
+  $(id).classList.add("on"); $("scrim").classList.add("on");
+  setTimeout(() => { const f = $(id).querySelector("input:not([readonly]):not([tabindex='-1']), button"); if (f) f.focus(); }, 60);
+}
+function closeDrawers() {
+  document.querySelectorAll(".drawer.on").forEach(d => d.classList.remove("on")); $("scrim").classList.remove("on");
+  if (lastFocus) lastFocus.focus();
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeDrawers(); });
+let qTimer;
+$("q").addEventListener("input", e => { clearTimeout(qTimer); qTimer = setTimeout(() => { state.q = e.target.value; state.page = 1; render(); }, 140); });
+$("q").addEventListener("keydown", e => { if (e.key === "Enter") { state.q = e.target.value; state.page = 1; render(); document.querySelector(".shop").scrollIntoView({behavior: "smooth"}); } });
+$("qBtn").addEventListener("click", () => { state.q = $("q").value; state.page = 1; render(); document.querySelector(".shop").scrollIntoView({behavior: "smooth"}); });
+
+// ---------- price alerts (hintavahdit)
+// A watch is {t, v, label, store, max, minPct}. Types: q = search words, brand = brand / product family,
+// cat = product group, store = everything in one store, pid = one specific product (same EAN in any store).
+const TYPES = [["q", "Tuote / hakusana"], ["brand", "Tuoteperhe / merkki"], ["cat", "Tuoteryhmä"], ["store", "Kauppa"], ["pid", "Tietty tuote"]];
+let watches = store.get("watches", []).filter(w => w && TYPES.some(t => t[0] === w.t) && w.v);
+const saveWatches = () => store.set("watches", watches);
+// Email alerts go to the site's own Netlify function. A page opened from a file has no server, so no email there.
+const ALERT_API = CONFIG && typeof CONFIG.api === "string" && CONFIG.api && /^https?:$/.test(location.protocol) ? CONFIG.api : "";
+let wType = "q", pidLabel = "", pidValue = "";
+function matches(w, o) {
+  if (w.store && !o.names.includes(w.store)) return false;
+  if (w.max && !(o.price && o.price <= w.max)) return false;
+  if (w.minPct && !((o.pct || 0) >= w.minPct)) return false;
+  if (w.t === "q") return norm(w.v).split(/\s+/).filter(Boolean).every(x => o.key.includes(x));
+  if (w.t === "brand") { const b = norm(w.v); return norm(o.brand) === b || norm(o.name).startsWith(b + " ") || norm(o.name).includes(" " + b + " "); }
+  if (w.t === "cat") return o.cat === w.v;
+  if (w.t === "store") return o.names.includes(w.v);
+  if (w.t === "pid") return o.pid === w.v || (w.label && norm(o.name) === norm(w.label));
+  return false;
+}
+function isHit(o) { return watches.some(w => matches(w, o)); }
+function describe(w) {
+  const t = TYPES.find(x => x[0] === w.t)[1];
+  let s = w.t === "pid" ? w.label : w.v;
+  const extra = [];
+  if (w.store && w.t !== "store") extra.push(w.store);
+  if (w.max) extra.push("alle " + fmt(w.max) + " €");
+  if (w.minPct) extra.push("vähintään −" + w.minPct + " %");
+  return [t, s + (extra.length ? ", " + extra.join(", ") : "")];
+}
+function setType(t) {
+  wType = t;
+  $("types").querySelectorAll("[data-t]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.t === t)));
+  $("fQ").hidden = t !== "q"; $("fBrand").hidden = t !== "brand"; $("fCat").hidden = t !== "cat"; $("fPid").hidden = t !== "pid";
+  $("fStore").querySelector("select").options[0].textContent = t === "store" ? "Valitse kauppa" : "Mikä tahansa kauppa";
+}
+function initWatchForm() {
+  const f = $("watchForm");
+  $("types").innerHTML = TYPES.map(([t, l]) => `<button type="button" data-t="${t}" aria-pressed="false"${t === "pid" ? " hidden" : ""}>${l}</button>`).join("");
+  $("types").addEventListener("click", e => { const b = e.target.closest("[data-t]"); if (b) setType(b.dataset.t); });
+  f.cat.innerHTML = CATS.map(c => `<option>${esc(c)}</option>`).join("");
+  f.store.innerHTML = `<option value="">Mikä tahansa kauppa</option>` + STORES.map(s => `<option>${esc(s.name)}</option>`).join("");
+  const brands = {}; offers.forEach(o => { if (o.brand) brands[o.brand] = (brands[o.brand] || 0) + 1; });
+  $("brandList").innerHTML = Object.keys(brands).sort((a, b) => brands[b] - brands[a]).slice(0, 400).map(b => `<option value="${esc(b)}">`).join("");
+  $("mailField").hidden = !ALERT_API;
+  f.email.value = store.get("email", "");
+  setType("q");
+}
+function watchProduct(o) {
+  const f = $("watchForm");
+  $("types").querySelector('[data-t="pid"]').hidden = false;
+  setType("pid");
+  pidValue = o.pid; pidLabel = o.name; f.pidLabel.value = o.name;
+  f.store.value = ""; f.max.value = ""; f.minPct.value = "";
+  $("watchNote").innerHTML = o.brand ? `Vahditaan juuri tätä tuotetta kaikissa kaupoissa. <button type="button" class="linkbtn" id="useBrand">Vahdi mieluummin koko merkkiä ${esc(o.brand)}</button>` : "Vahditaan juuri tätä tuotetta kaikissa kaupoissa.";
+  const ub = $("useBrand"); if (ub) ub.addEventListener("click", () => { setType("brand"); f.brand.value = o.brand; $("watchNote").textContent = ""; });
+  openDrawer("watchDrawer");
+}
+function renderWatchCount() {
+  $("watchBadge").hidden = !watches.length; $("watchBadge").textContent = watches.length;
+  $("watchOnlyRow").hidden = !watches.length;
+  $("watchOnly").textContent = state.watchOnly ? "Näytä kaikki tarjoukset" : "Näytä vain vahtien osumat";
+}
+function renderWatches() {
+  $("watchList").innerHTML = watches.map((w, i) => {
+    const n = offers.filter(o => matches(w, o)).length, [k, s] = describe(w);
+    return `<li><span><span class="k">${esc(k)}</span>${esc(s)}</span><span class="n" title="osumaa nyt">${n}</span><button type="button" data-unwatch="${i}" aria-label="Poista vahti ${esc(s)}">×</button></li>`;
+  }).join("");
+  if (!ALERT_API) $("watchLead").textContent = "Sivua käytetään ilman kirjautumista. Vahdit tallentuvat tähän selaimeen ja osumat merkitään punaisella reunalla.";
+}
+const num = v => { const n = Number(String(v || "").replace(",", ".").replace(/[^0-9.]/g, "")); return isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null; };
+const ERR = {
+  email: "Tarkista sähköpostiosoite.",
+  limit: "Tälle osoitteelle on jo paljon vahteja tai lisäsit tänään monta. Kokeile huomenna tai poista vanhoja vahteja sähköpostin linkistä.",
+  busy: "Vahteja on lisätty tänään poikkeuksellisen paljon. Kokeile huomenna uudelleen.",
+  send: "Vahvistusviestin lähetys epäonnistui. Tarkista osoite tai kokeile hetken päästä uudelleen.",
+  mail_not_configured: "Sähköposti-ilmoitukset eivät ole vielä käytössä tällä sivulla."
+};
+async function sendAlert(w, email, website) {
+  try {
+    const r = await fetch(ALERT_API, {method: "POST", headers: {"content-type": "application/json"},
+      body: JSON.stringify({email, t: w.t, v: w.v, label: w.label || "", store: w.store || "", max: w.max || "", minPct: w.minPct || "", website: website || ""})});
+    const res = await r.json().catch(() => ({}));
+    if (res.ok && res.exists) return "Sinulla on jo sama vahti sähköpostissa, joten uutta vahvistusta ei tarvita.";
+    if (res.ok) { store.set("email", email); return "Lähetimme vahvistusviestin osoitteeseen " + email + ". Ilmoitukset alkavat, kun klikkaat viestin linkkiä."; }
+    return (ERR[res.error] || "Sähköpostivahdin tallennus ei onnistunut. Kokeile myöhemmin uudelleen.") + " Vahti toimii silti tällä sivulla.";
+  } catch (err) {
+    return "Sähköpostivahdin tallennus ei onnistunut. Kokeile myöhemmin uudelleen. Vahti toimii silti tällä sivulla.";
+  }
+}
+let mailBusy = false;
+$("watchForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target, note = $("watchNote");
+  const w = {t: wType, v: "", label: "", store: f.store.value || "", max: num(f.max.value), minPct: Math.min(99, Math.round(num(f.minPct.value) || 0)) || null};
+  if (wType === "q") w.v = f.q.value.trim().slice(0, 60);
+  if (wType === "brand") w.v = f.brand.value.trim().slice(0, 60);
+  if (wType === "cat") w.v = f.cat.value;
+  if (wType === "store") { w.v = f.store.value; w.store = ""; }
+  if (wType === "pid") { w.v = pidValue; w.label = pidLabel; }
+  if (!w.v || ((wType === "q" || wType === "brand") && w.v.length < 2)) { note.textContent = wType === "store" ? "Valitse kauppa." : "Kirjoita vähintään kaksi merkkiä."; return; }
+  const email = (f.email.value || "").trim();
+  if (email && !f.email.checkValidity()) { note.textContent = "Tarkista sähköpostiosoite."; return; }
+  watches.push(w); saveWatches();
+  f.q.value = ""; f.brand.value = ""; f.max.value = ""; f.minPct.value = "";
+  const n = offers.filter(o => matches(w, o)).length;
+  let msg = n ? "Vahti löysi " + n + " tarjousta. Ne näkyvät punaisella reunalla." : "Ei osumia juuri nyt. Vahti jää odottamaan.";
+  if ((w.t === "store" || w.t === "cat") && n > 60 && !w.max && !w.minPct) msg += " Vinkki: rajaa alennusprosentilla, niin viesteihin tulee vain parhaat.";
+  renderWatches(); render(); renderRail();
+  if (!email || !ALERT_API || mailBusy) { note.textContent = msg; return; }
+  mailBusy = true; f.querySelector("[type=submit]").disabled = true; note.textContent = msg + " Lähetetään…";
+  note.textContent = msg + " " + await sendAlert(w, email, f.website.value);
+  mailBusy = false; f.querySelector("[type=submit]").disabled = false;
+});
+$("watchList").addEventListener("click", e => {
+  const b = e.target.closest("[data-unwatch]"); if (!b) return;
+  watches.splice(Number(b.dataset.unwatch), 1); saveWatches();
+  if (!watches.length) state.watchOnly = false;
+  renderWatches(); render(); renderRail();
+});
+$("watchOnly").addEventListener("click", () => { state.watchOnly = !state.watchOnly; state.page = 1; render(); closeDrawers(); });
+$("bannerForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const email = e.target.email.value.trim();
+  $("watchForm").email.value = email;
+  $("bannerMsg").textContent = ALERT_API ? "Valitse vielä mitä vahditaan." : "Sähköposti-ilmoitukset toimivat julkaistulla sivulla. Vahdit toimivat silti tässä selaimessa.";
+  setType("q"); openDrawer("watchDrawer");
+});
+
+// ---------- sources and footer
+function renderSources() {
+  const when = iso => { const d = new Date(iso); return isNaN(d) ? "?" : d.toLocaleString("fi-FI", {day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit"}); };
+  const lines = CHAINS.map(ch => {
+    const mine = STORES.filter(s => s.chain === ch);
+    const info = mine.length === 1 && mine[0].info ? mine[0].info : mine.length + " kauppaa Jyväskylässä.";
+    return `<p><strong>${esc(ch)}</strong>: ${esc(info)}</p>`;
+  });
+  const src = D.sources || {};
+  if (src["K-Ruoka"]) lines.push(`<p>K-kauppojen edut kerätty ${esc(when(src["K-Ruoka"]))}.</p>`);
+  Object.entries(D.status || {}).filter(([, v]) => typeof v === "string").forEach(([k, v]) => lines.push(`<p>${esc(k)}: ${esc(v)}</p>`));
+  $("sources").innerHTML = lines.join("");
+  $("footStores").innerHTML = CHAINS.map(ch => `<li>${esc(ch)}</li>`).join("");
+}
+
+if (EMBEDDED) boot(EMBEDDED);
+else fetch("offers.json", {cache: "no-cache"}).then(r => r.json()).then(boot).catch(() => { $("count").textContent = "Tarjousten lataus epäonnistui. Päivitä sivu."; });
+</script>
+</body>
+</html>

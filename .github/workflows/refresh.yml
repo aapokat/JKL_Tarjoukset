@@ -1,0 +1,42 @@
+name: Refresh offers
+
+# Fetches the offers every morning and commits them. Netlify notices the commit and rebuilds the site;
+# the price alert emails go out later in the morning (netlify/functions/vahdit-tarkistus.mjs).
+on:
+  schedule:
+    - cron: "17 3 * * *"   # every day 03:17 UTC (05:17 / 06:17 Finnish time)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch S-kaupat, Lidl, Kärkkäinen, Tokmanni and Prisma.fi offers
+        run: python site/fetch_offers.py
+      - name: Try K-Ruoka with a real browser (Cloudflare may refuse; then the last snapshot is kept)
+        continue-on-error: true
+        timeout-minutes: 50
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+          python site/collect_browser.py
+      - name: Check that the page still builds
+        run: python site/build.py
+      - name: Commit the new data (Netlify rebuilds from it)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add site/data/offers.json site/data/k-ruoka-snapshot.json
+          git commit -m "Refresh offers $(date -u +%F)" || echo "No changes"
+          git pull --rebase origin main && git push
