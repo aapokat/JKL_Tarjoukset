@@ -791,7 +791,7 @@ $("bannerForm").addEventListener("submit", e => {
   e.preventDefault();
   const email = e.target.email.value.trim();
   $("watchForm").email.value = email;
-  $("bannerMsg").textContent = ALERT_API ? "Valitse vielä mitä vahditaan." : "Sähköposti-ilmoitukset toimivat julkaistulla sivulla. Vahdit toimivat silti tässä selaimessa.";
+  $("bannerMsg").textContent = ALERT_API ? "Valitse vielä mitä vahditaan." : "Sähköposti-ilmoitukset eivät ole vielä käytössä. Vahdit toimivat silti tässä selaimessa.";
   setType("q"); openDrawer("watchDrawer");
 });
 

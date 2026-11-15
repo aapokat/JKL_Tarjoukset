@@ -31,10 +31,9 @@ Pohjana on Ylivieskan tarjoukset -sivu, mutta tämä versio on tehty Jyväskylä
 
 ## Rakenne
 
-- **Netlify** rakentaa sivun (`python3 site/build.py`) ja julkaisee kansion `public/`. Samassa sivustossa pyörivät
-  sähköpostivahtien funktiot (`netlify/functions/`) ja vahtien tallennus (Netlify Blobs). Erillistä palvelinta tai tietokantaa ei tarvita.
-- **GitHub Actions** (`.github/workflows/refresh.yml`) hakee tarjoukset joka aamu klo 03.17 UTC ja committaa datan. Netlify huomaa
-  commitin ja rakentaa sivun uudelleen.
+- **GitHub Actions** (`.github/workflows/site.yml`) hakee tarjoukset joka aamu klo 03.17 UTC, committaa datan, rakentaa sivun
+  (`python3 site/build.py`) ja julkaisee kansion `public/` **GitHub Pagesiin**. Sama workflow julkaisee sivun uudelleen jokaisesta
+  pushista mainiin.
 - **Ajastettu funktio** `vahdit-tarkistus` ajetaan joka aamu klo 06.40 UTC (8.40 tai 9.40 Suomen aikaa) ja lähettää sähköpostit.
 
 | Lähde | Miten | Tiedosto |
@@ -46,18 +45,21 @@ Pohjana on Ylivieskan tarjoukset -sivu, mutta tämä versio on tehty Jyväskylä
 Actions yrittää myös K-Ruokaa Playwrightilla. Jos Cloudflare estää sen, edellinen K-haku jää voimaan ja sivu kertoo sen päivämäärän.
 Jos jokin muu kauppa ei vastaa, sen edellisen haun tarjoukset pidetään, eikä yksi rikki mennyt kauppa kaada muita.
 
-## Käyttöönotto Netlifyssä
+## Käyttöönotto GitHub Pagesissa
 
-1. Pushaa tämä kansio GitHubiin omaksi repoksi (tämä repo: `aapokat/JKL_Tarjoukset`).
-2. Netlifyssä **Add new project → Import an existing project → GitHub** ja valitse repo. Asetukset tulevat `netlify.toml`-tiedostosta,
-   eli build command `python3 site/build.py` ja publish directory `public`. Paina **Deploy**.
-3. Lisää sähköpostin lähetys (alla) ja deployaa uudelleen (**Deploys → Trigger deploy**), jotta funktiot saavat ympäristömuuttujat.
-4. GitHubissa repon **Settings → Actions → General → Workflow permissions: Read and write**, jotta päivittäinen haku voi committaa datan.
-   Ensimmäisen haun voi käynnistää käsin: **Actions → Refresh offers → Run workflow**.
+1. Repon **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. **Settings → Actions → General → Workflow permissions: Read and write**, jotta päivittäinen haku voi committaa datan.
+3. **Actions → Päivitä ja julkaise → Run workflow**. Sivu tulee osoitteeseen `https://aapokat.github.io/JKL_Tarjoukset/`.
 
-Netlify Blobs on mukana ilmaisessa tasossa eikä vaadi asetuksia. Ilmaisen tason funktiokutsut riittävät hyvin tähän käyttöön.
+GitHub Pages on ilmainen eikä rajoita julkaisujen määrää. Netlifyn ilmaistaso ei sovi tähän: jokainen julkaisu maksaa
+15 krediittiä 300:sta kuukaudessa, ja tarjoukset julkaistaan joka päivä.
 
-## Sähköpostivahdit
+Sähköposti-ilmoitukset tarvitsevat palvelimen, jota GitHub Pagesissa ei ole. Ilman sitä vahdit toimivat selaimessa (osumat
+merkitään sivulla), ja sähköpostikenttä on piilossa. Kun vahtipalvelu on pystyssä, sen osoite laitetaan repon muuttujaan
+**Settings → Secrets and variables → Actions → Variables → `ALERT_API`**, ja seuraava julkaisu ottaa sen käyttöön.
+Kansion `netlify/` funktiot ovat valmiina, jos sivu joskus siirretään maksulliselle Netlify-tasolle.
+
+## Sähköpostivahdit (Netlify-versio)
 
 Kun käyttäjä lisää vahdin ja antaa sähköpostin, sivu lähettää sen funktiolle `/api/vahti`. Vahti tallentuu Netlify Blobsiin
 tilassa "odottaa", ja käyttäjä saa vahvistusviestin. Vahti alkaa vasta, kun linkkiä klikataan, joten kukaan ei voi tilata viestejä
