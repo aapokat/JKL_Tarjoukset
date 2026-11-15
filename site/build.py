@@ -76,6 +76,9 @@ def main():
             pct = round((1 - price / was) * 100)
         if (pct or 0) < MIN_PCT:
             continue  # smaller discounts (or no known normal price) are left out on purpose
+        bundle = re.search(r"(\d+) kpl =", note or "")
+        if bundle and int(bundle.group(1)) >= 10:
+            continue  # "21 kpl = 4,00 €" is a store's typing error in its till system, not a real offer
         brand = norm(brand) if re.search(r"\w\w", brand or "") else ""
         if re.search(r"\d+ kpl =", note or "") and re.fullmatch(r"\d+ \w+", unit or ""):
             unit = ""  # "3 ps" next to "3 kpl = 1,00 €" says the same thing twice

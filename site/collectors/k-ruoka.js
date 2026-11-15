@@ -45,6 +45,8 @@
     const disc = ms && (ms.discount || ms.batch);
     if (disc && disc.endDate) valid = "Voimassa " + dmy(disc.endDate) + " asti";
     if (disc && disc.reason === "OUTGOING_ITEMS") notes.push("Poistuva erä");
+    if (disc && disc.amount >= 10) return null;   // "21 kpl = 4 €": a mistyped store campaign, not a real deal
+    if (o.offerType === "store") notes.push("Vain tässä kaupassa");
     const cat = (p && p.category && p.category.tree && p.category.tree[0] && p.category.tree[0].localizedName.finnish) || catName;
     const slug = p && p.productAttributes && p.productAttributes.urlSlug;
     const img = (p && p.productAttributes && p.productAttributes.image && p.productAttributes.image.url) || o.image || "";

@@ -516,13 +516,16 @@ function card(o, opts) {
   const shown = o.names.filter(n => state.on.has(n));
   const list = shown.length ? shown : o.names;
   const chains = [...new Set(list.map(chainOf))];
-  const chip = list.length === 1 ? `<span class="chip" title="${esc(list[0])}">${esc(chains[0])}</span>`
+  const chip = list.length === 1 ? `<span class="chip" title="${esc(list[0])}">${esc(list[0])}</span>`
     : `<button type="button" class="chip" data-stores="${o.i}" title="${esc(list.join(", "))}">${list.length} kauppaa</button>`;
-  const where = list.length === 1 ? list[0] : chains.join(", ");
-  const link = o.url ? `href="${esc(o.url)}" target="_blank" rel="noopener"` : "";
-  const fav = favs.has(o.id);
   const shortUnit = /^[a-zäö]{1,4}$/i.test(o.unit || "");
   const price = o.price ? fmt(o.price) + " €" + (shortUnit ? `<small>/${esc(o.unit)}</small>` : "") : "−" + o.pct + " %";
+  const local = list.length === 1 && !(STORES.find(s => s.name === list[0]) || {}).info;   // one K or S store, not a national chain
+  const where = list.length === 1 ? "" : chains.join(", ");
+  const meta = [o.brand, where].filter(Boolean).join(", ");
+  const notes = [o.note, shortUnit ? "" : o.unit, o.valid, local && !/Vain tässä kaupassa/.test(o.note) ? "Hinta vain tässä kaupassa" : ""].filter(Boolean).join(". ");
+  const link = o.url ? `href="${esc(o.url)}" target="_blank" rel="noopener"` : "";
+  const fav = favs.has(o.id);
   return `<article class="card${isHit(o) ? " hit" : ""}">
     <div class="media">
       ${o.url ? `<a class="img" ${link} tabindex="-1" aria-hidden="true">` : `<div class="img">`}${o.img ? `<img src="${esc(o.img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ph',textContent:'Ei kuvaa'}))">` : `<span class="ph">${esc(o.cat)}</span>`}${o.url ? "</a>" : "</div>"}
@@ -533,8 +536,8 @@ function card(o, opts) {
     </div>
     <div class="body">
       <div class="row1"><h3 class="name">${o.url ? `<a ${link}>${esc(o.name)}</a>` : esc(o.name)}</h3><span class="price">${price}</span></div>
-      <div class="row2"><span class="where" title="${esc(list.join(", "))}">${esc(o.brand ? o.brand + ", " + where : where)}</span>${o.was ? `<s>${fmt(o.was)} €</s>` : ""}</div>
-      ${o.note || (o.unit && !shortUnit) || o.valid ? `<div class="note">${esc([o.note, shortUnit ? "" : o.unit, o.valid].filter(Boolean).join(". "))}</div>` : ""}
+      <div class="row2"><span class="where" title="${esc(list.join(", "))}">${esc(meta)}</span>${o.was ? `<s>${fmt(o.was)} €</s>` : ""}</div>
+      ${notes ? `<div class="note">${esc(notes)}</div>` : ""}
       ${o.best === 0 ? `<div class="cheaper">Muualla ${fmt(o.bestPrice)} €${/kpl =/.test(o.note) ? " kappaleelta" : ""}</div>` : ""}
       ${opts && opts.compact ? "" : `<div class="actions"><button type="button" class="pill ghost small" data-watch="${o.i}">Vahdi</button>${o.url ? `<a class="pill small" ${link}>Kaupan sivulle</a>` : `<button type="button" class="pill small" data-fav="${o.i}">${fav ? "Suosikeissa" : "Suosikiksi"}</button>`}</div>`}
     </div>
