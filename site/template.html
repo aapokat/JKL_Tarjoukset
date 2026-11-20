@@ -200,6 +200,10 @@ button.chip{cursor:pointer}
 .drawer header{display:flex;align-items:center;justify-content:space-between;padding:20px 22px 8px}
 .drawer header h2{margin:0;font-family:var(--display);font-size:26px;font-weight:800;letter-spacing:-.01em}
 .drawer .content{overflow:auto;padding:8px 22px 30px}
+.drawer .content{flex:1;min-height:0}
+.drawerfoot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 22px calc(14px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line);background:var(--page)}
+.drawerfoot .pill{flex:1;max-width:260px;padding:13px 20px;font-size:15px}
 .drawer p.lead{margin:0 0 16px;color:var(--muted);font-size:14px}
 .types{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
 .types button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer}
@@ -458,7 +462,11 @@ button.chip{cursor:pointer}
 </aside>
 <aside class="drawer side-drawer" id="filterDrawer" aria-labelledby="filterTitle" aria-modal="true" role="dialog">
   <header><h2 id="filterTitle">Rajaa tarjouksia</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
-  <div class="content"><div class="side" id="sideMobile"></div><p><button class="pill" type="button" data-close>Näytä tarjoukset</button></p></div>
+  <div class="content"><div class="side" id="sideMobile"></div></div>
+  <footer class="drawerfoot">
+    <button class="linkbtn" type="button" id="clearFilters">Tyhjennä rajaukset</button>
+    <button class="pill" type="button" data-close id="showOffers">Näytä tarjoukset</button>
+  </footer>
 </aside>
 
 <script>
@@ -752,6 +760,8 @@ function render() {
   if (state.cat) chips.push(["cat", state.cat]);
   if (state.sub) chips.push(["sub", state.sub === "-" ? "Muut" : state.sub]);
   if (state.q.trim()) chips.push(["q", "”" + state.q.trim() + "”"]);
+  $("showOffers").textContent = list.length ? `Näytä ${list.length.toLocaleString("fi-FI")} ${list.length === 1 ? "tarjous" : "tarjousta"}` : "Ei tarjouksia näillä rajauksilla";
+  $("clearFilters").hidden = !(state.cat || state.q.trim() || state.minPct > (D.minPct || 0) || state.on.size < STORES.length);
   $("activeChips").innerHTML = chips.map(([k, l]) => `<button type="button" data-clear="${k}" aria-label="Poista rajaus ${esc(l)}">${esc(l)} ×</button>`).join("");
   const empty = $("empty");
   empty.hidden = list.length > 0;
@@ -1086,6 +1096,17 @@ window.appPermissionChanged = () => {
   renderAppNote();
   if (notifAllowed() && /Salli ilmoitukset/.test($("watchNote").textContent)) $("watchNote").textContent = "Ilmoitukset sallittu. Vahti ilmoittaa puhelimeen uusista osumista.";
 };
+
+// ---------- filter drawer footer
+$("clearFilters").addEventListener("click", () => {
+  state.cat = ""; state.sub = ""; state.q = ""; $("q").value = ""; state.minPct = D.minPct || 0;
+  state.on = new Set(STORES.map(s => s.name));
+  store.set("cat", ""); store.set("sub", ""); store.set("minPct", state.minPct); saveStores();
+  state.page = 1; refresh();
+});
+$("showOffers").addEventListener("click", () => {
+  setTimeout(() => document.querySelector(".shop").scrollIntoView({behavior: "smooth", block: "start"}), 260);
+});
 
 // ---------- feedback: opens the visitor's own e-mail program with the message filled in (nothing is sent from here)
 const FEEDBACK_TO = "aapo@aaje.fi";
