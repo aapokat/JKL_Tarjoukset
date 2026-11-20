@@ -13,7 +13,7 @@ import os, re, sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from catalog import CAT_ORDER, categorize
+from catalog import CAT_ORDER, SUBCATS, categorize, guess_group, subcategorize
 
 HERE = Path(__file__).parent
 DATA = HERE / "data"
@@ -46,8 +46,26 @@ STORES = json.loads((DATA / "stores.json").read_text(encoding="utf-8"))
 MIN_PCT = STORES.get("minDiscountPercent", 0)
 
 
+def ended(valid, today):
+    """True when the offer's last date ("Voimassa 15.11. asti", "19.11.–22.11.") is already behind us."""
+    found = re.findall(r"(\d{1,2})\.(\d{1,2})\.(\d{4})?", valid or "")
+    if not found:
+        return False
+    d, m, y = found[-1]
+    try:
+        end = datetime(int(y) if y else today.year, int(m), int(d)).date()
+    except ValueError:
+        return False
+    if not y and (end - today).days > 180:
+        end = end.replace(year=end.year - 1)
+    if not y and (today - end).days > 180:
+        end = end.replace(year=end.year + 1)
+    return end < today
+
+
 def main():
     fetched = load("offers.json") or {"fetched": "", "offers": [], "status": {}}
+    today = datetime.now(timezone.utc).astimezone().date()
     rows = list(fetched["offers"])
     sources = {"Haku": fetched.get("fetched", "")}
     have = {r[0] for r in rows}
@@ -71,6 +89,8 @@ def main():
         name = norm(name)
         if not name or not (price or pct):
             continue
+        if ended(valid, today):
+            continue  # K-Ruoka is collected by hand, so its snapshot can hold offers that have already ended
         if store == "Prisma.fi":
             continue  # online store, not a store offer
         if not pct and price and was and was > price:
@@ -87,10 +107,14 @@ def main():
             low = name.lower() + " "
             brand = next((b for lb, b in lower if low.startswith(lb)), "")
         cat = categorize(raw_cat, name)
+        # K-Ruoka gives only broad groups ("Maito, juusto, munat ja rasvat"), so its category says nothing about the family.
+        sub = subcategorize(cat, raw_cat, name, use_raw=not store.startswith("K-"))
+        if cat == "Muut":
+            cat, sub = guess_group(name)
         key = (str(pid) or name.lower(), price, was, note)
         g = groups.get(key)
         if not g:
-            g = groups[key] = {"stores": [], "cat": cat, "name": name, "price": price, "unit": unit, "was": was, "pct": pct,
+            g = groups[key] = {"stores": [], "cat": cat, "sub": sub, "name": name, "price": price, "unit": unit, "was": was, "pct": pct,
                                "note": note, "valid": valid, "url": url, "img": img, "pid": str(pid), "brand": brand}
             order.append(key)
         if store not in g["stores"]:
@@ -115,6 +139,7 @@ def main():
                 g["best"] = 1 if abs(each(g) - best) < 0.005 else 0
                 g["bestPrice"] = round(best, 2)
 
+    SUBS = {c: [n for n, _ in SUBCATS.get(c, [])] for c in CAT_ORDER}
     store_names = sorted({s for k in order for s in groups[k]["stores"]}, key=lambda s: (CHAIN_ORDER.index(chain_of(s)), s))
     sidx = {s: i for i, s in enumerate(store_names)}
     counts = {s: 0 for s in store_names}
@@ -125,15 +150,16 @@ def main():
             counts[s] += 1
         out_rows.append([sorted(sidx[s] for s in g["stores"]), CAT_ORDER.index(g["cat"]), g["name"], g["price"], g["unit"],
                          g["was"], g["pct"], g["note"], g["valid"], g["url"], g["img"], g["pid"], g["brand"],
-                         g.get("best"), g.get("bestPrice")])
+                         g.get("best"), g.get("bestPrice"), SUBS[g["cat"]].index(g["sub"]) if g["sub"] else -1])
     payload = {
         "built": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "sources": sources,
         "status": fetched.get("status", {}),
         "stores": [{"name": s, "chain": chain_of(s), "count": counts[s], "info": NATIONAL.get(s, "")} for s in store_names],
         "cats": CAT_ORDER,
+        "subs": [SUBS[c] for c in CAT_ORDER],
         "minPct": MIN_PCT,
-        "fields": ["stores", "cat", "name", "price", "unit", "was", "pct", "note", "valid", "url", "img", "pid", "brand", "best", "bestPrice"],
+        "fields": ["stores", "cat", "name", "price", "unit", "was", "pct", "note", "valid", "url", "img", "pid", "brand", "best", "bestPrice", "sub"],
         "offers": out_rows,
     }
     PUBLIC.mkdir(exist_ok=True)

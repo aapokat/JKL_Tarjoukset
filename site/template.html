@@ -21,8 +21,8 @@
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html{-webkit-text-size-adjust:100%;overflow-x:hidden}
-body{margin:0;overflow-x:hidden;background:var(--page);color:var(--ink);font:15px/1.5 var(--font);font-feature-settings:"tnum" 0}
+html{-webkit-text-size-adjust:100%;overflow-x:clip}
+body{margin:0;overflow-x:clip;background:var(--page);color:var(--ink);font:15px/1.5 var(--font);font-feature-settings:"tnum" 0}
 img{display:block;max-width:100%}
 a{color:inherit}
 button{font:inherit;color:inherit}
@@ -74,6 +74,11 @@ button{font:inherit;color:inherit}
 .catlist button .n{margin-left:auto;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 .catlist button[aria-pressed="true"]{background:var(--surface);font-weight:600;box-shadow:0 1px 0 var(--line)}
 .catlist button[aria-pressed="true"] svg{color:var(--ink)}
+.catlist li.open>button{background:var(--surface);font-weight:600}
+.sublist{list-style:none;margin:2px 0 8px 27px;padding:0 0 0 10px;border-left:2px solid var(--line)}
+.sublist button{padding:6px 10px;font-size:13.5px;border-radius:10px}
+.sublist button[aria-pressed="true"]{box-shadow:none;background:var(--ink);color:#fff}
+.sublist button[aria-pressed="true"] .n{color:#fff;opacity:.75}
 .catlist .all .n{margin-left:auto;background:var(--sale);color:#fff;border-radius:7px;padding:1px 7px;font-weight:700}
 .chains{display:flex;flex-direction:column;gap:2px}
 .chain{border-radius:12px}
@@ -120,6 +125,11 @@ button.chip{cursor:pointer}
 .row2 .where{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .row2 s{white-space:nowrap}
 .note{margin-top:6px;font-size:12.5px;color:var(--ink)}
+.storeline{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:13px;color:var(--ink);min-width:0}
+.storeline svg{width:15px;height:15px;flex:none;color:var(--muted)}
+.storeline span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.storeline.one{font-weight:700}
+.storeline.one svg{color:var(--sale)}
 .cheaper{margin-top:4px;font-size:12.5px;color:var(--good);font-weight:600}
 .storelist{margin-top:6px;font-size:12.5px;color:var(--muted)}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto;padding-top:14px}
@@ -194,6 +204,15 @@ button.chip{cursor:pointer}
 .wlist button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px}
 .linkbtn{border:0;background:none;padding:0;text-decoration:underline;cursor:pointer;font-size:13px}
 .side-drawer .content .side{display:block}
+/* Filters stay at hand while scrolling: a sticky sidebar on wide screens, an edge tab that opens them on narrow ones. */
+.shop>.side{position:sticky;top:96px;align-self:start;max-height:calc(100vh - 112px);overflow:auto;overscroll-behavior:contain;padding:0 6px 20px 0;scrollbar-width:thin}
+.edgetab{display:none;position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:35;border:0;cursor:pointer;
+  background:var(--pill);color:#fff;border-radius:0 14px 14px 0;padding:11px 6px;box-shadow:0 6px 20px rgba(24,25,28,.18);
+  writing-mode:vertical-rl;rotate:180deg;font:inherit;font-weight:700;font-size:12.5px;letter-spacing:.02em;align-items:center;gap:6px;opacity:.94}
+.edgetab svg{width:14px;height:14px;rotate:90deg}
+.edgetab .dot{width:8px;height:8px;border-radius:50%;background:var(--sale)}
+.side-drawer{left:0;right:auto;transform:translateX(-100%)}
+.side-drawer .catlist li.open>button{position:sticky;top:0;z-index:1}
 
 @media (max-width:1060px){
   .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -203,6 +222,7 @@ button.chip{cursor:pointer}
   .shop{grid-template-columns:1fr}
   .shop>.side{display:none}
   .filterbtn{display:inline-flex}
+  .edgetab{display:flex}
   .links{display:none}
   .icons{margin-left:auto}
   .searchcard{left:16px;right:16px}
@@ -343,6 +363,7 @@ button.chip{cursor:pointer}
   </footer>
 </main>
 
+<button class="edgetab" id="edgeTab" type="button" data-open="filters" aria-label="Rajaa tarjouksia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Rajaa<span class="dot" id="edgeDot" hidden></span></button>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="watchDrawer" aria-labelledby="watchTitle" aria-modal="true" role="dialog">
   <header><h2 id="watchTitle">Hintavahdit</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
@@ -414,18 +435,29 @@ const ICON = {
 };
 const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[name] || ICON["Muut"]}</svg>`;
 
-let D, offers = [], STORES = [], CATS = [], CHAINS = [];
+let D, offers = [], STORES = [], CATS = [], SUBS = [], CHAINS = [];
 const PER_PAGE = 24;
-const state = {q: "", cat: store.get("cat", ""), sort: store.get("sort", "pct"), minPct: 0, page: 1, view: "all", on: null, watchOnly: false};
+const state = {q: "", cat: store.get("cat", ""), sub: store.get("sub", ""), sort: store.get("sort", "pct"), minPct: 0, page: 1, view: "all", on: null, watchOnly: false};
 let favs = new Set(session.get("favs", []));
 const saveFavs = () => session.set("favs", [...favs]);
 
+// "Voimassa 15.11. asti", "Myymälässä 19.11.–22.11.": the last date is the end. The data can be days old
+// (K-Ruoka is collected by hand), so offers that have ended are dropped here, against today's date.
+function expired(valid) {
+  const all = [...String(valid || "").matchAll(/(\d{1,2})\.(\d{1,2})\.(\d{4})?/g)];
+  if (!all.length) return false;
+  const [, d, m, y] = all[all.length - 1], now = new Date();
+  let end = new Date(y ? +y : now.getFullYear(), +m - 1, +d, 23, 59, 59);
+  if (!y && end - now > 180 * 864e5) end.setFullYear(end.getFullYear() - 1);   // "28.12." read in January
+  if (!y && now - end > 180 * 864e5) end.setFullYear(end.getFullYear() + 1);   // "3.1." read in November
+  return end < now;
+}
 function boot(data) {
-  D = data; CATS = data.cats; STORES = data.stores;
+  D = data; CATS = data.cats; SUBS = data.subs || []; STORES = data.stores;
   CHAINS = [...new Set(STORES.map(s => s.chain))];
-  offers = data.offers.map((o, i) => {
+  offers = data.offers.filter(o => !expired(o[8])).map((o, i) => {
     const names = o[0].map(j => STORES[j].name);
-    return {i, names, cat: CATS[o[1]], name: o[2], price: o[3], unit: o[4], was: o[5], pct: o[6], note: o[7], valid: o[8],
+    return {i, names, cat: CATS[o[1]], sub: o[15] >= 0 && SUBS[o[1]] ? SUBS[o[1]][o[15]] : "", name: o[2], price: o[3], unit: o[4], was: o[5], pct: o[6], note: o[7], valid: o[8],
             url: o[9], img: o[10], pid: o[11], brand: o[12], best: o[13], bestPrice: o[14],
             id: [o[11] || o[2], o[3], o[7]].join("|"),
             key: norm(o[2] + " " + o[12] + " " + names.join(" "))};
@@ -434,6 +466,7 @@ function boot(data) {
   state.on = new Set(STORES.map(s => s.name).filter(n => !saved || saved.includes(n) || !known.includes(n)));
   store.set("known", STORES.map(s => s.name));
   if (!CATS.includes(state.cat)) state.cat = "";
+  if (!state.cat || !(SUBS[CATS.indexOf(state.cat)] || []).includes(state.sub)) state.sub = "";
   state.minPct = Math.max(data.minPct || 0, store.get("minPct", 0));
   const when = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("fi-FI", {weekday: "long", day: "numeric", month: "numeric"}).replace(/\.$/, ""); };
   const dates = Object.values(data.sources || {}).filter(Boolean).sort();
@@ -459,11 +492,23 @@ const saveStores = () => store.set("stores", [...state.on]);
 const visible = o => o.names.some(n => state.on.has(n));
 const openChains = new Set();
 function sideHTML() {
-  const counts = {}; let total = 0;
-  for (const o of offers) if (visible(o) && (o.pct || 0) >= state.minPct) { counts[o.cat] = (counts[o.cat] || 0) + 1; total++; }
+  const counts = {}, subCounts = {}; let total = 0;
+  for (const o of offers) if (visible(o) && (o.pct || 0) >= state.minPct) {
+    counts[o.cat] = (counts[o.cat] || 0) + 1; total++;
+    if (o.cat === state.cat) subCounts[o.sub] = (subCounts[o.sub] || 0) + 1;
+  }
+  const subList = c => {
+    const names = (SUBS[CATS.indexOf(c)] || []).filter(n => subCounts[n]);
+    if (!names.length) return "";
+    if (subCounts[""]) names.push("");
+    return `<ul class="sublist" aria-label="${esc(c)}: tuoteperheet">
+        <li><button type="button" data-sub="" data-subcat="${esc(c)}" aria-pressed="${!state.sub}">Kaikki<span class="n">${counts[c]}</span></button></li>
+        ${names.map(n => `<li><button type="button" data-sub="${esc(n || "-")}" aria-pressed="${state.sub === (n || "-")}">${esc(n || "Muut")}<span class="n">${subCounts[n]}</span></button></li>`).join("")}
+      </ul>`;
+  };
   const cats = `<section><h3>Tuoteryhmä</h3><ul class="catlist">
       <li class="all"><button type="button" data-cat="" aria-pressed="${state.cat === ""}">${icon("Ruoka, muut")}Kaikki tarjoukset<span class="n">${total}</span></button></li>
-      ${CATS.filter(c => counts[c]).map(c => `<li><button type="button" data-cat="${esc(c)}" aria-pressed="${state.cat === c}">${icon(c)}${esc(c)}<span class="n">${counts[c]}</span></button></li>`).join("")}
+      ${CATS.filter(c => counts[c]).map(c => `<li${state.cat === c ? ' class="open"' : ""}><button type="button" data-cat="${esc(c)}" aria-pressed="${state.cat === c && !state.sub}" aria-expanded="${state.cat === c}">${icon(c)}${esc(c)}<span class="n">${counts[c]}</span></button>${state.cat === c ? subList(c) : ""}</li>`).join("")}
     </ul></section>`;
   const chains = `<section><h3>Kaupat</h3><div class="chains">${CHAINS.map(ch => {
       const mine = STORES.filter(s => s.chain === ch), on = mine.filter(s => state.on.has(s.name)).length;
@@ -489,7 +534,14 @@ function renderSide() {
 function onSide(e) {
   const t = e.target;
   const cat = t.closest("[data-cat]");
-  if (cat) { state.cat = cat.dataset.cat; store.set("cat", state.cat); state.page = 1; refresh(); return; }
+  const sub = t.closest("[data-sub]");
+  if (sub) { state.sub = sub.dataset.sub; store.set("sub", state.sub); state.page = 1; refresh(); return; }
+  if (cat) {
+    const c = cat.dataset.cat;
+    if (c && c === state.cat && !state.sub) state.cat = "";   // a second tap on an open group closes it
+    else state.cat = c;
+    state.sub = ""; store.set("cat", state.cat); store.set("sub", ""); state.page = 1; refresh(); return;
+  }
   const more = t.closest("[data-more]");
   if (more) { const ch = more.dataset.more; openChains.has(ch) ? openChains.delete(ch) : openChains.add(ch); renderSide(); return; }
   const min = t.closest("[data-min]");
@@ -521,8 +573,8 @@ function card(o, opts) {
   const shortUnit = /^[a-zäö]{1,4}$/i.test(o.unit || "");
   const price = o.price ? fmt(o.price) + " €" + (shortUnit ? `<small>/${esc(o.unit)}</small>` : "") : "−" + o.pct + " %";
   const local = list.length === 1 && !(STORES.find(s => s.name === list[0]) || {}).info;   // one K or S store, not a national chain
-  const where = list.length === 1 ? "" : chains.join(", ");
-  const meta = [o.brand, where].filter(Boolean).join(", ");
+  const where = list.length === 1 ? list[0] : list.length === 2 ? list.join(" ja ") : `${list[0]} ja ${list.length - 1} muuta`;
+  const meta = o.brand || "";
   const notes = [o.note, shortUnit ? "" : o.unit, o.valid, local && !/Vain tässä kaupassa/.test(o.note) ? "Hinta vain tässä kaupassa" : ""].filter(Boolean).join(". ");
   const link = o.url ? `href="${esc(o.url)}" target="_blank" rel="noopener"` : "";
   const fav = favs.has(o.id);
@@ -536,7 +588,8 @@ function card(o, opts) {
     </div>
     <div class="body">
       <div class="row1"><h3 class="name">${o.url ? `<a ${link}>${esc(o.name)}</a>` : esc(o.name)}</h3><span class="price">${price}</span></div>
-      <div class="row2"><span class="where" title="${esc(list.join(", "))}">${esc(meta)}</span>${o.was ? `<s>${fmt(o.was)} €</s>` : ""}</div>
+      <div class="row2"><span class="where">${esc(meta)}</span>${o.was ? `<s>${fmt(o.was)} €</s>` : ""}</div>
+      <div class="storeline${list.length === 1 ? " one" : ""}" title="${esc(list.join(", "))}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg><span>${esc(where)}</span></div>
       ${notes ? `<div class="note">${esc(notes)}</div>` : ""}
       ${o.best === 0 ? `<div class="cheaper">Muualla ${fmt(o.bestPrice)} €${/kpl =/.test(o.note) ? " kappaleelta" : ""}</div>` : ""}
       ${opts && opts.compact ? "" : `<div class="actions"><button type="button" class="pill ghost small" data-watch="${o.i}">Vahdi</button>${o.url ? `<a class="pill small" ${link}>Kaupan sivulle</a>` : `<button type="button" class="pill small" data-fav="${o.i}">${fav ? "Suosikeissa" : "Suosikiksi"}</button>`}</div>`}
@@ -546,6 +599,7 @@ function card(o, opts) {
 function filtered() {
   const words = norm(state.q).split(/\s+/).filter(Boolean);
   let list = offers.filter(o => visible(o) && (o.pct || 0) >= state.minPct && (!state.cat || o.cat === state.cat) &&
+    (!state.sub || o.sub === (state.sub === "-" ? "" : state.sub)) &&
     words.every(w => o.key.includes(w)) && (!state.watchOnly || isHit(o)) && (state.view !== "fav" || favs.has(o.id)));
   const byName = (a, b) => a.name.localeCompare(b.name, "fi");
   if (state.sort === "pct") list.sort((a, b) => (b.pct || 0) - (a.pct || 0) || byName(a, b));
@@ -564,7 +618,9 @@ function render() {
   const chips = [];
   if (state.view === "fav") chips.push(["view", "Suosikit"]);
   if (state.watchOnly) chips.push(["watch", "Vahtien osumat"]);
+  $("edgeDot").hidden = !(state.cat || state.minPct > (D.minPct || 0) || state.on.size < STORES.length);
   if (state.cat) chips.push(["cat", state.cat]);
+  if (state.sub) chips.push(["sub", state.sub === "-" ? "Muut" : state.sub]);
   if (state.q.trim()) chips.push(["q", "”" + state.q.trim() + "”"]);
   $("activeChips").innerHTML = chips.map(([k, l]) => `<button type="button" data-clear="${k}" aria-label="Poista rajaus ${esc(l)}">${esc(l)} ×</button>`).join("");
   const empty = $("empty");
@@ -596,7 +652,8 @@ $("activeChips").addEventListener("click", e => {
   const k = b.dataset.clear;
   if (k === "view") state.view = "all";
   if (k === "watch") state.watchOnly = false;
-  if (k === "cat") { state.cat = ""; store.set("cat", ""); }
+  if (k === "cat") { state.cat = ""; state.sub = ""; store.set("cat", ""); store.set("sub", ""); }
+  if (k === "sub") { state.sub = ""; store.set("sub", ""); }
   if (k === "q") { state.q = ""; $("q").value = ""; }
   state.page = 1; refresh();
 });
