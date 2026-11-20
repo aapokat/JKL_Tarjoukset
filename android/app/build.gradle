@@ -1,0 +1,54 @@
+plugins {
+    id "com.android.application"
+}
+
+// The build number from GitHub Actions makes every APK an update of the previous one.
+def run = (System.getenv("GITHUB_RUN_NUMBER") ?: "1") as int
+
+android {
+    namespace "fi.aaje.tarjoukset"
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "fi.aaje.tarjoukset"
+        minSdk 26
+        targetSdk 34
+        versionCode run
+        versionName "1.0." + run
+    }
+
+    signingConfigs {
+        // The same key every time, so a new APK installs over the old one. Kept in the repo for convenience:
+        // see README ("Android-sovellus") for moving it to a GitHub secret.
+        shared {
+            storeFile file(System.getenv("APP_KEYSTORE") ?: "debug.keystore")
+            storePassword System.getenv("APP_KEYSTORE_PASSWORD") ?: "android"
+            keyAlias System.getenv("APP_KEY_ALIAS") ?: "androiddebugkey"
+            keyPassword System.getenv("APP_KEY_PASSWORD") ?: "android"
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.shared
+        }
+        debug {
+            signingConfig signingConfigs.shared
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation "androidx.work:work-runtime:2.9.1"
+    implementation "androidx.core:core:1.13.1"
+}
