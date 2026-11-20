@@ -75,7 +75,9 @@ FIRST_RULES = [
     (r"limppu", "Leivät ja leivonnaiset"),
     (r"kurpitsa", "Hedelmät ja vihannekset"),
     (r"levite|oivariini|voi\b", "Maito ja juusto"),
-    (r"kosmetiikkalaukku|vartalovoi|co-test", "Kauneus ja terveys"),
+    (r"kosmetiikkalaukku|vartalovoi|co-test|kylpymaito|vartalomaito|puhdistusmaito|kylpyvaahto|kylpysuola", "Kauneus ja terveys"),
+    (r"semper|piltti|muru baby|\d+ ?kk\b", "Lapset ja lelut"),
+    (r"rukkaset|lapaset|sormikkaat|hanskat", "Vaatteet ja kengät"),
     (r"kahvinkeitin|kahvimylly|kahvikone|espressokone|vedenkeitin", "Elektroniikka ja kodinkoneet"),
     (r"kahvikuppi|kahvimuki|teekannu|teemuki|kahvikannu|kahvisuoda|kahvipurkki|teekuppi|termosmuki", "Koti, keittiö ja siivous"),
 ]
@@ -111,7 +113,20 @@ def by_rules(text, rules):
     return None
 
 
+FOOD_GROUPS = {"Hedelmät ja vihannekset", "Liha ja kala", "Maito ja juusto", "Leivät ja leivonnaiset", "Valmisruoat ja pakasteet",
+               "Kuivat, mausteet ja kastikkeet", "Makeiset ja naposteltavat", "Juomat ja kahvi", "Ruoka, muut"}
+# Tokmanni's own non-food ranges: "Penaali Miny hedelmät" is a pencil case, not fruit.
+NOT_FOOD = re.compile(r"\bminy\b|kotikulta|penaali|mukeja|\bmuki\b|lautanen|tyynynpäällinen|tarra|koriste")
+
+
 def categorize(raw_cat, name):
+    group = _categorize(raw_cat, name)
+    if group in FOOD_GROUPS and not raw_cat and NOT_FOOD.search((name or "").lower()):
+        return "Muut"   # build.py then finds the right non-food group from the product families
+    return group
+
+
+def _categorize(raw_cat, name):
     """Group for one offer: the store's category first, then guesses from the product name.
     raw_cat may be a path "most specific > ... > top level"; the most specific level that matches wins."""
     specific = RULES[:-1]  # the last rule ("ruoka") is only a fallback: "Kissan märkäruoka" is a pet product

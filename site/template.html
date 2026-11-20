@@ -511,7 +511,7 @@ const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 
 let D, offers = [], STORES = [], CATS = [], SUBS = [], CHAINS = [];
 const PER_PAGE = 24;
-const state = {q: "", cat: store.get("cat", ""), sub: store.get("sub", ""), sort: store.get("sort", "pct"), minPct: 0, page: 1, view: "all", on: null, watchOnly: false};
+const state = {q: "", cat: store.get("cat", ""), sub: store.get("sub", ""), sort: store.get("sort", "rel"), minPct: 0, page: 1, view: "all", on: null, watchOnly: false};
 // In the Android app (window.TarjousApp) favourites stay for good; on the website for this browser session.
 const APP = window.TarjousApp || null;
 const favKeep = APP ? store : session;
@@ -643,8 +643,8 @@ function sideHTML() {
   const pcts = [D.minPct || 20, 30, 40, 50, 70].filter((v, i, a) => a.indexOf(v) === i);
   const disc = `<section><h3>Alennus vähintään</h3><div class="seg">${pcts.map(p => `<button type="button" data-min="${p}" aria-pressed="${state.minPct === p}">${p} %</button>`).join("")}</div></section>`;
   const sort = `<section><h3>Järjestys</h3><select data-sort aria-label="Järjestys">
-      ${[["pct", "Suurin alennus ensin"], ["low", "Halvin ensin"], ["best", "Halvimmat vertailussa ensin"], ["az", "Aakkosjärjestys"]].map(([v, l]) => `<option value="${v}"${state.sort === v ? " selected" : ""}>${l}</option>`).join("")}
-    </select><p class="hint">Vihreä merkki: sama tuote on tarjouksessa myös muualla, ja tämä on halvin.</p></section>`;
+      ${[["rel", "Osuvimmat ensin"], ["pct", "Suurin alennus ensin"], ["low", "Halvin ensin"], ["best", "Halvimmat vertailussa ensin"], ["az", "Aakkosjärjestys"]].map(([v, l]) => `<option value="${v}"${state.sort === v ? " selected" : ""}>${l}</option>`).join("")}
+    </select><p class="hint">${state.sort === "rel" ? (hasProfile() ? "Osuvimmat: sinua kiinnostavat ja niitä lähellä olevat tuotteet ensin, sitten arjen ruoka." : "Osuvimmat: arjen kotiruoka ensin. Kun tallennat ja vahdit tarjouksia, järjestys mukautuu sinuun.") + " " : ""}Vihreä merkki: sama tuote on tarjouksessa myös muualla, ja tämä on halvin.</p></section>`;
   return cats + chains + disc + sort;
 }
 function renderSide() {
@@ -735,6 +735,7 @@ function filtered() {
     (!state.sub || o.sub === (state.sub === "-" ? "" : state.sub)) &&
     words.every(w => o.key.includes(w)) && (!state.watchOnly || isHit(o)) && (state.view !== "fav" || favs.has(o.id)));
   const byName = (a, b) => a.name.localeCompare(b.name, "fi");
+  if (state.sort === "rel") list = byRelevance(list);
   if (state.sort === "pct") list.sort((a, b) => (b.pct || 0) - (a.pct || 0) || byName(a, b));
   if (state.sort === "low") list.sort((a, b) => (a.price ?? 1e9) - (b.price ?? 1e9) || byName(a, b));
   if (state.sort === "best") list.sort((a, b) => ((b.best === 1) - (a.best === 1)) || (b.pct || 0) - (a.pct || 0) || byName(a, b));
@@ -1096,6 +1097,64 @@ window.appPermissionChanged = () => {
   renderAppNote();
   if (notifAllowed() && /Salli ilmoitukset/.test($("watchNote").textContent)) $("watchNote").textContent = "Ilmoitukset sallittu. Vahti ilmoittaa puhelimeen uusista osumista.";
 };
+
+// ---------- "Osuvimmat ensin": what this visitor is likely to want, then everyday food
+// How everyday each product family is for a household that cooks at home (most users are students).
+const EVERYDAY = {
+  "Maito ja juusto": {"Maidot ja piimät": 10, "Juustot": 9, "Jogurtit ja viilit": 8, "Voit ja levitteet": 8, "Munat": 8, "Rahkat ja vanukkaat": 7, "Kermat": 6, "Tuorejuustot": 6, "Kasvipohjaiset": 5, "": 6},
+  "Leivät ja leivonnaiset": {"Leivät": 9, "Näkkileivät ja korput": 6, "Pullat ja makeat leivonnaiset": 4, "Keksit": 4, "Suolaiset leivonnaiset": 5, "": 5},
+  "Liha ja kala": {"Jauheliha": 10, "Broileri ja kalkkuna": 9, "Makkarat ja nakit": 8, "Leikkeleet": 8, "Kasviproteiinit": 6, "Kala ja äyriäiset": 6, "Nauta, possu ja muut lihat": 6, "": 6},
+  "Hedelmät ja vihannekset": {"Hedelmät": 8, "Vihannekset": 8, "Perunat ja juurekset": 8, "Salaatit ja yrtit": 6, "Marjat": 5, "Sienet": 4, "": 6},
+  "Kuivat, mausteet ja kastikkeet": {"Pasta, riisi ja nuudelit": 9, "Murot, myslit ja puurot": 7, "Kastikkeet ja öljyt": 6, "Säilykkeet": 6, "Jauhot ja leivonta": 5, "Mausteet ja liemet": 5, "Maailman maut": 5, "Hillot, hunajat ja levitteet": 4, "Pähkinät, siemenet ja kuivatut hedelmät": 3, "": 4},
+  "Valmisruoat ja pakasteet": {"Pizzat": 8, "Valmisateriat": 8, "Keitot": 6, "Pikaruoat ja välipalat": 6, "Pakastevihannekset ja -marjat": 6, "Puurot ja jälkiruoat": 5, "Jäätelöt": 4, "Taikinat ja pohjat": 3, "": 5},
+  "Juomat ja kahvi": {"Kahvi": 8, "Mehut, smoothiet ja glögit": 5, "Virvoitusjuomat ja vedet": 5, "Energia- ja urheilujuomat": 5, "Tee ja kaakao": 4, "Oluet, siiderit ja lonkerot": 3, "": 4},
+  "Makeiset ja naposteltavat": {"Suklaa": 4, "Sipsit ja naposteltavat": 4, "Karkit": 3, "Patukat": 3, "": 3},
+  "Ruoka, muut": {"": 4},
+  "Koti, keittiö ja siivous": {"Siivous ja pyykki": 5, "Paperit ja kertakäyttö": 5, "Keittiö ja kattaus": 2, "": 1},
+  "Kauneus ja terveys": {"Suihku, hygienia ja parranajo": 4, "Hiukset": 2, "": 1},
+  "Lemmikit": {"": 1}
+};
+function hasProfile() { return !!(watches.length || favs.size || (APP && store.get("tips", false) && topInterests().length)); }
+function relevanceOf() {
+  // Everything the visitor has told us by using the page: alerts, saved offers and (in the app, with consent) interests.
+  const liked = APP && store.get("tips", false) ? topInterests() : [];
+  const favSubs = new Map(), favCats = new Map();
+  for (const id of favs) {
+    const o = offers.find(x => x.id === id) || favData[id]; if (!o) continue;
+    if (o.sub) favSubs.set(o.cat + "|" + o.sub, true);
+    favCats.set(o.cat, true);
+  }
+  const likedCats = new Set(liked.filter(x => x.t === "sub").map(x => x.cat).concat(liked.filter(x => x.t === "cat").map(x => x.v)));
+  return o => {
+    let s = ((EVERYDAY[o.cat] || {})[o.sub] ?? (EVERYDAY[o.cat] || {})[""] ?? 0);
+    for (const x of liked) if (likes(x, o)) s += x.t === "sub" ? 12 : x.t === "brand" ? 8 : 6;
+    if (likedCats.has(o.cat)) s += 3;                               // close to what you like: same group
+    if (favSubs.has(o.cat + "|" + o.sub)) s += 5; else if (favCats.has(o.cat)) s += 2;
+    if (isHit(o)) s += 10;
+    s += (o.pct || 0) * 0.06;                                       // a bigger discount still counts: 50 % adds 3
+    if (o.price && o.price <= 8) s += 1;
+    if (!o.img) s -= 2;
+    if (o.names.length > 1) s += 0.3;
+    if (o.cat === "Muut") s -= 2;
+    return s;
+  };
+}
+// Highest score first, but the same product family does not fill the first pages: each repeat costs a little.
+function byRelevance(list) {
+  const score = relevanceOf();
+  const scored = list.map(o => [score(o), o]).sort((a, b) => b[0] - a[0] || (b[1].pct || 0) - (a[1].pct || 0));
+  const head = scored.slice(0, 300), out = [], used = new Map();
+  while (head.length) {
+    let bi = 0, bv = -1e9;
+    for (let i = 0; i < head.length; i++) {
+      const k = head[i][1].cat + "|" + head[i][1].sub, v = head[i][0] - 1.6 * (used.get(k) || 0);
+      if (v > bv) { bv = v; bi = i; }
+    }
+    const [, o] = head.splice(bi, 1)[0], k = o.cat + "|" + o.sub;
+    used.set(k, (used.get(k) || 0) + 1); out.push(o);
+  }
+  return out.concat(scored.slice(300).map(x => x[1]));
+}
 
 // ---------- filter drawer footer
 $("clearFilters").addEventListener("click", () => {
