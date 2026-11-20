@@ -30,15 +30,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      # K-Ruoka refuses GitHub's servers. Its offers come from a Windows machine at home (tools/windows/).
       - name: Fetch S-kaupat, Lidl, Kärkkäinen, Tokmanni and Rusta offers
         run: python site/fetch_offers.py
-      - name: Try K-Ruoka with a real browser (Cloudflare may refuse; then the last snapshot is kept)
-        continue-on-error: true
-        timeout-minutes: 50
-        run: |
-          pip install playwright
-          python -m playwright install --with-deps chromium
-          python site/collect_browser.py
       - name: Check that the page still builds
         run: python site/build.py
       - name: Commit the new data

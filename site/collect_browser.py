@@ -7,6 +7,7 @@ and runs collectors/k-ruoka.js inside the page, exactly as if you pasted it into
     pip install playwright && python -m playwright install chromium
     python site/collect_browser.py            # headless
     python site/collect_browser.py --show     # visible window (helps if Cloudflare asks to verify)
+    python site/collect_browser.py --show --edge   # the Edge already on Windows, no Chromium download needed
 
 Works best from a home connection. In GitHub Actions it is tried too, but Cloudflare may block
 datacenter addresses; then the previous snapshot is kept and the page shows its date.
@@ -18,12 +19,12 @@ HERE = Path(__file__).parent
 OUT = HERE / "data" / "k-ruoka-snapshot.json"
 
 
-def main(show=False):
+def main(show=False, edge=False):
     from playwright.sync_api import sync_playwright
     stores = json.loads((HERE / "data" / "stores.json").read_text(encoding="utf-8"))["kruoka"]
     script = (HERE / "collectors" / "k-ruoka.js").read_text(encoding="utf-8")
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=not show)
+        browser = p.chromium.launch(headless=not show, channel="msedge" if edge else None)
         page = browser.new_page(locale="fi-FI", user_agent=None)
         page.goto("https://www.k-ruoka.fi/kauppa/tarjoushaku", wait_until="domcontentloaded", timeout=90000)
         page.wait_for_function("[...document.scripts].some(s => /\\/assets\\/b-\\d+\\//.test(s.src))", timeout=90000)
@@ -57,4 +58,4 @@ def main(show=False):
 
 
 if __name__ == "__main__":
-    main("--show" in sys.argv)
+    main("--show" in sys.argv, "--edge" in sys.argv)

@@ -122,18 +122,18 @@ Netlifyssä **Logs → Functions → vahdit-tarkistus** näyttää jokaisen aamu
 
 ## K-kaupat omalta koneelta
 
-Kotiverkosta K-Ruoka toimii yleensä varmemmin kuin GitHubin palvelimilta:
+K-Ruoka (Cloudflare) estää GitHubin palvelimet, joten K-kauppojen tarjoukset kerää kotona aina päällä oleva
+Windows-kone (`tools/windows/`). Se avaa k-ruoka.fi:n Edgessä, ajaa keräimen (`site/collectors/k-ruoka.js`)
+kaikille kaupoille, tallentaa `site/data/k-ruoka-snapshot.json`:n ja pushaa sen. Push julkaisee sivun.
 
-```
-pip install playwright
-python -m playwright install chromium
-python site/collect_browser.py          # tai --show, jos haluat nähdä selaimen
-git add site/data/k-ruoka-snapshot.json && git commit -m "K-Ruoka" && git push
-```
+1. Asenna Git (git-scm.com) ja Python (python.org, rasti kohtaan *Add python.exe to PATH*).
+2. `git clone https://github.com/aapokat/JKL_Tarjoukset.git C:\JKL_Tarjoukset` ja `cd C:\JKL_Tarjoukset`
+3. `powershell -ExecutionPolicy Bypass -File tools\windows\asenna.ps1` (asentaa Playwrightin ja ajastuksen joka toiselle aamulle)
+4. Aja kerran käsin: `powershell -ExecutionPolicy Bypass -File tools\windows\kerays.ps1`. Ensimmäinen push avaa
+   GitHub-kirjautumisen, joka tallentuu Windowsin tunnuksiin.
 
-Ilman Pythonia: avaa https://www.k-ruoka.fi/kauppa/tarjoushaku, liitä `site/collectors/k-ruoka.js` selaimen konsoliin
-(F12 → Console) ja tallenna ladattu `k-ruoka-snapshot.json` kansioon `site/data/`. Haku kestää noin 15 minuuttia (25 kauppaa).
-Jos jokin kauppa ei vastaa, muut kerätään silti, ja `collect_browser.py` pitää sen kaupan edellisen haun.
+Ajastus ajaa keräyksen kirjautuneena käyttäjänä, koska keräys avaa selainikkunan. Viimeisimmän ajon tuloste on
+`tools\windows\kerays.log`. Jos keräys epäonnistuu, sivulle jää edellinen K-haku ja sen päivämäärä näkyy sivun alalaidassa.
 
 ## Jos kaupan sivusto muuttuu
 
