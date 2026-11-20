@@ -218,10 +218,12 @@ button.chip{cursor:pointer}
 .side-drawer .content .side{display:block}
 /* Filters stay at hand while scrolling: a sticky sidebar on wide screens, an edge tab that opens them on narrow ones. */
 .shop>.side{position:sticky;top:96px;align-self:start;max-height:calc(100vh - 112px);overflow:auto;overscroll-behavior:contain;padding:0 6px 20px 0;scrollbar-width:thin}
-.edgetab{display:none;position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:35;border:0;cursor:pointer;
-  background:var(--pill);color:#fff;border-radius:0 14px 14px 0;padding:11px 6px;box-shadow:0 6px 20px rgba(24,25,28,.18);
-  writing-mode:vertical-rl;rotate:180deg;font:inherit;font-weight:700;font-size:12.5px;letter-spacing:.02em;align-items:center;gap:6px;opacity:.94}
-.edgetab svg{width:14px;height:14px;rotate:90deg}
+/* The tab itself is not rotated (only its label), so the rounded side always points into the page. */
+.edgetab{display:none;position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:35;border:0;cursor:pointer;margin:0;
+  background:var(--pill);color:#fff;border-radius:0 14px 14px 0;padding:12px 7px 12px 6px;box-shadow:0 6px 20px rgba(24,25,28,.18);
+  flex-direction:column;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:12.5px;letter-spacing:.02em;opacity:.94}
+.edgetab .lbl{writing-mode:vertical-rl;transform:rotate(180deg);line-height:1}
+.edgetab svg{width:14px;height:14px}
 .edgetab .dot{width:8px;height:8px;border-radius:50%;background:var(--sale)}
 .side-drawer{left:0;right:auto;transform:translateX(-100%)}
 .side-drawer .catlist li.open>button{position:sticky;top:0;z-index:1}
@@ -375,7 +377,7 @@ button.chip{cursor:pointer}
   </footer>
 </main>
 
-<button class="edgetab" id="edgeTab" type="button" data-open="filters" aria-label="Rajaa tarjouksia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>Rajaa<span class="dot" id="edgeDot" hidden></span></button>
+<button class="edgetab" id="edgeTab" type="button" data-open="filters" aria-label="Rajaa tarjouksia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="lbl">Rajaa</span><span class="dot" id="edgeDot" hidden></span></button>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="watchDrawer" aria-labelledby="watchTitle" aria-modal="true" role="dialog">
   <header><h2 id="watchTitle">Hintavahdit</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
@@ -1021,6 +1023,14 @@ window.appBack = () => {
   if (state.view !== "all" || state.watchOnly) { state.view = "all"; state.watchOnly = false; state.page = 1; render(); return true; }
   return false;
 };
+
+// ---------- fresh data: a page (or the app) left open for over 5 hours reloads itself when it is looked at again
+const LOADED_AT = Date.now(), STALE_MS = 5 * 3600e3;
+function reloadIfStale() {
+  if (Date.now() - LOADED_AT > STALE_MS && document.visibilityState === "visible" && !document.querySelector(".drawer.on")) location.reload();
+}
+document.addEventListener("visibilitychange", reloadIfStale);
+setInterval(reloadIfStale, 10 * 60e3);
 
 // ---------- start
 if (EMBEDDED) boot(EMBEDDED);
