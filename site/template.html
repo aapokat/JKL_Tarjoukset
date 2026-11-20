@@ -130,6 +130,12 @@ button.chip{cursor:pointer}
 .storeline span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .storeline.one{font-weight:700}
 .storeline.one svg{color:var(--sale)}
+.ends{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;margin-top:8px;font-size:12.5px;font-weight:600;background:var(--surface);border-radius:999px;padding:3px 10px 3px 8px;box-shadow:inset 0 0 0 1px var(--line)}
+.ends svg{width:14px;height:14px}
+.ends.soon{background:#FFF1E0;box-shadow:none;color:#8A4B00}
+.ends.over{background:#EDEEF0;box-shadow:none;color:var(--muted)}
+.card.gone .media{filter:grayscale(1);opacity:.6}
+.card.gone .off,.card.gone .best{display:none}
 .cheaper{margin-top:4px;font-size:12.5px;color:var(--good);font-weight:600}
 .storelist{margin-top:6px;font-size:12.5px;color:var(--muted)}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:auto;padding-top:14px}
@@ -202,6 +208,12 @@ button.chip{cursor:pointer}
 .wlist .k{font-size:12px;color:var(--muted);display:block}
 .wlist .n{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
 .wlist button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px}
+.apppanel{margin-top:26px;padding-top:18px;border-top:1px solid var(--line)}
+.apppanel h3{font-family:var(--display);font-size:19px;font-weight:800;margin:0 0 6px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;margin:10px 0;cursor:pointer}
+.check input{width:18px;height:18px;margin:1px 0 0;accent-color:var(--ink);flex:none}
+.interests{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 4px}
+.interests button{border:0;background:var(--surface);border-radius:999px;padding:5px 10px 5px 12px;font-size:13px;cursor:pointer;box-shadow:inset 0 0 0 1px var(--line)}
 .linkbtn{border:0;background:none;padding:0;text-decoration:underline;cursor:pointer;font-size:13px}
 .side-drawer .content .side{display:block}
 /* Filters stay at hand while scrolling: a sticky sidebar on wide screens, an edge tab that opens them on narrow ones. */
@@ -338,7 +350,7 @@ button.chip{cursor:pointer}
     </div>
     <div class="side-text">
       <strong>Hintavahti kertoo, kun ale osuu</strong>
-      <p>Valitse tuote, merkki, tuoteryhmä tai kauppa. Saat aamulla yhden koosteviestin uusista osumista, ja vahdin voi poistaa jokaisen viestin linkistä.</p>
+      <p>Valitse tuote, merkki, tuoteryhmä tai kauppa. Osumat merkitään sivulle, ja Android-sovellus ilmoittaa niistä puhelimeen.</p>
     </div>
   </section>
 
@@ -358,7 +370,7 @@ button.chip{cursor:pointer}
     <div class="src">
       <h4>Mistä tiedot tulevat</h4>
       <div id="sources"></div>
-      <p>Hinnat kopioidaan kauppojen omilta sivuilta. Tarkista hinta aina kaupassa. Suosikit säilyvät tämän selainistunnon ajan, hintavahdit tässä selaimessa.</p>
+      <p>Hinnat kopioidaan kauppojen omilta sivuilta. Tarkista hinta aina kaupassa. Suosikit säilyvät tämän selainistunnon ajan, hintavahdit tässä selaimessa. Android-sovelluksessa suosikit säilyvät pysyvästi ja vahdit ilmoittavat puhelimeen: <a href="https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk">lataa sovellus (APK)</a>.</p>
     </div>
   </footer>
 </main>
@@ -387,6 +399,14 @@ button.chip{cursor:pointer}
     </form>
     <datalist id="brandList"></datalist>
     <ul class="wlist" id="watchList"></ul>
+    <section class="apppanel" id="appPanel" hidden>
+      <h3>Puhelimen ilmoitukset</h3>
+      <p class="formnote" id="appNote"></p>
+      <label class="check"><input type="checkbox" id="tipsToggle"> Ilmoita uusista aleista, jotka muistuttavat usein katsomiasi tuotteita</label>
+      <div class="interests" id="interestList"></div>
+      <p class="formnote"><button type="button" class="linkbtn" id="tipsView">Näytä sinua kiinnostavat tarjoukset</button> · <button type="button" class="linkbtn" id="testNotif">Kokeile ilmoitusta</button> · <button type="button" class="linkbtn" id="clearInterest">Unohda katseluhistoria</button></p>
+    </section>
+    <p class="formnote" id="apkLink">Ilmoitukset puhelimeen saat Android-sovelluksella: <a href="https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk">lataa sovellus (APK)</a>.</p>
     <p class="formnote" id="watchOnlyRow" hidden><button type="button" class="linkbtn" id="watchOnly">Näytä vain vahtien osumat</button></p>
   </div>
 </aside>
@@ -438,19 +458,41 @@ const icon = name => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
 let D, offers = [], STORES = [], CATS = [], SUBS = [], CHAINS = [];
 const PER_PAGE = 24;
 const state = {q: "", cat: store.get("cat", ""), sub: store.get("sub", ""), sort: store.get("sort", "pct"), minPct: 0, page: 1, view: "all", on: null, watchOnly: false};
-let favs = new Set(session.get("favs", []));
-const saveFavs = () => session.set("favs", [...favs]);
+// In the Android app (window.TarjousApp) favourites stay for good; on the website for this browser session.
+const APP = window.TarjousApp || null;
+const favKeep = APP ? store : session;
+let favs = new Set(favKeep.get("favs", []));
+let favData = favKeep.get("favData", {});   // a copy of each saved offer, so it can still be shown after it ends
+let ghosts = [];                            // saved offers that are no longer in the data
+const saveFavs = () => { favKeep.set("favs", [...favs]); favKeep.set("favData", favData); syncApp(); };
+const byI = i => i < offers.length ? offers[i] : ghosts[i - offers.length];
 
 // "Voimassa 15.11. asti", "Myymälässä 19.11.–22.11.": the last date is the end. The data can be days old
 // (K-Ruoka is collected by hand), so offers that have ended are dropped here, against today's date.
-function expired(valid) {
+function endOf(valid) {
   const all = [...String(valid || "").matchAll(/(\d{1,2})\.(\d{1,2})\.(\d{4})?/g)];
-  if (!all.length) return false;
+  if (!all.length) return null;
   const [, d, m, y] = all[all.length - 1], now = new Date();
   let end = new Date(y ? +y : now.getFullYear(), +m - 1, +d, 23, 59, 59);
   if (!y && end - now > 180 * 864e5) end.setFullYear(end.getFullYear() - 1);   // "28.12." read in January
   if (!y && now - end > 180 * 864e5) end.setFullYear(end.getFullYear() + 1);   // "3.1." read in November
-  return end < now;
+  return end;
+}
+function expired(valid) { const e = endOf(valid); return !!e && e < new Date(); }
+function daysLeft(valid) {
+  const e = endOf(valid); if (!e) return null;
+  const a = new Date(); a.setHours(0, 0, 0, 0); const b = new Date(e); b.setHours(0, 0, 0, 0);
+  return Math.round((b - a) / 864e5);
+}
+// How long an offer still runs, in words. "full" also names a date further away (used for saved offers).
+function endLabel(o, full) {
+  const d = daysLeft(o.valid);
+  if (o.ended) return d != null && d >= 0 ? "Ei enää kaupan listalla" : "Päättynyt";
+  if (d == null) return "";   // "Tokmannin viikkotarjous": the text itself stays in the notes
+  if (d <= 0) return "Päättyy tänään";
+  if (d === 1) return "Päättyy huomenna";
+  if (d <= 6) return `Voimassa vielä ${d} päivää`;
+  return full ? `Voimassa ${endOf(o.valid).getDate()}.${endOf(o.valid).getMonth() + 1}. asti` : "";
 }
 function boot(data) {
   D = data; CATS = data.cats; SUBS = data.subs || []; STORES = data.stores;
@@ -462,6 +504,12 @@ function boot(data) {
             id: [o[11] || o[2], o[3], o[7]].join("|"),
             key: norm(o[2] + " " + o[12] + " " + names.join(" "))};
   });
+  ghosts = [];
+  const live = new Set(offers.map(o => o.id));
+  for (const id of favs) {
+    const g = favData[id];
+    if (!live.has(id) && g) ghosts.push({...g, id, i: offers.length + ghosts.length, ended: true, key: norm(g.name + " " + g.brand + " " + g.names.join(" "))});
+  }
   const saved = store.get("stores", null), known = store.get("known", []);
   state.on = new Set(STORES.map(s => s.name).filter(n => !saved || saved.includes(n) || !known.includes(n)));
   store.set("known", STORES.map(s => s.name));
@@ -471,8 +519,19 @@ function boot(data) {
   const when = iso => { const d = new Date(iso); return isNaN(d) ? "" : d.toLocaleDateString("fi-FI", {weekday: "long", day: "numeric", month: "numeric"}).replace(/\.$/, ""); };
   const dates = Object.values(data.sources || {}).filter(Boolean).sort();
   $("heroSub").textContent = "Vähintään " + (data.minPct || 20) + " % alennukset " + STORES.length + " kaupasta." + (dates.length ? " Päivitetty " + when(dates[dates.length - 1]) + "." : "");
-  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail();
+  fromHash();
+  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp();
 }
+// Links from phone notifications: #hits = alert hits, #fav = saved offers, #tips = offers like the ones you look at.
+function fromHash() {
+  const h = location.hash.slice(1);
+  if (!["hits", "fav", "tips"].includes(h)) return false;
+  state.watchOnly = h === "hits"; state.view = h === "fav" ? "fav" : h === "tips" ? "tips" : "all"; state.page = 1;
+  state.cat = ""; state.sub = ""; state.q = ""; $("q").value = "";
+  history.replaceState(null, "", location.pathname + location.search);
+  return true;
+}
+window.addEventListener("hashchange", () => { if (offers.length && fromHash()) { closeDrawers(); render(); document.querySelector(".shop").scrollIntoView(); } });
 
 // ---------- hero collage: the twelve biggest discounts that have a photo, from as many chains as possible
 function renderCollage() {
@@ -488,7 +547,7 @@ function renderCollage() {
 }
 
 // ---------- sidebar (also used inside the mobile filter drawer)
-const saveStores = () => store.set("stores", [...state.on]);
+const saveStores = () => { store.set("stores", [...state.on]); syncApp(); };
 const visible = o => o.names.some(n => state.on.has(n));
 const openChains = new Set();
 function sideHTML() {
@@ -535,7 +594,11 @@ function onSide(e) {
   const t = e.target;
   const cat = t.closest("[data-cat]");
   const sub = t.closest("[data-sub]");
-  if (sub) { state.sub = sub.dataset.sub; store.set("sub", state.sub); state.page = 1; refresh(); return; }
+  if (sub) {
+    state.sub = sub.dataset.sub; store.set("sub", state.sub);
+    if (state.sub && state.sub !== "-") bump({cat: state.cat, sub: state.sub}, 1);
+    state.page = 1; refresh(); return;
+  }
   if (cat) {
     const c = cat.dataset.cat;
     if (c && c === state.cat && !state.sub) state.cat = "";   // a second tap on an open group closes it
@@ -575,10 +638,12 @@ function card(o, opts) {
   const local = list.length === 1 && !(STORES.find(s => s.name === list[0]) || {}).info;   // one K or S store, not a national chain
   const where = list.length === 1 ? list[0] : list.length === 2 ? list.join(" ja ") : `${list[0]} ja ${list.length - 1} muuta`;
   const meta = o.brand || "";
-  const notes = [o.note, shortUnit ? "" : o.unit, o.valid, local && !/Vain tässä kaupassa/.test(o.note) ? "Hinta vain tässä kaupassa" : ""].filter(Boolean).join(". ");
+  const ends = endLabel(o, state.view === "fav" || favs.has(o.id));
+  const left = daysLeft(o.valid);
+  const notes = [o.note, shortUnit ? "" : o.unit, ends ? "" : o.valid, local && !/Vain tässä kaupassa/.test(o.note) ? "Hinta vain tässä kaupassa" : ""].filter(Boolean).join(". ");
   const link = o.url ? `href="${esc(o.url)}" target="_blank" rel="noopener"` : "";
   const fav = favs.has(o.id);
-  return `<article class="card${isHit(o) ? " hit" : ""}">
+  return `<article class="card${!o.ended && isHit(o) ? " hit" : ""}${o.ended ? " gone" : ""}" data-i="${o.i}">
     <div class="media">
       ${o.url ? `<a class="img" ${link} tabindex="-1" aria-hidden="true">` : `<div class="img">`}${o.img ? `<img src="${esc(o.img)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'ph',textContent:'Ei kuvaa'}))">` : `<span class="ph">${esc(o.cat)}</span>`}${o.url ? "</a>" : "</div>"}
       <button type="button" class="fav" data-fav="${o.i}" aria-pressed="${fav}" aria-label="${fav ? "Poista suosikeista" : "Lisää suosikkeihin"}: ${esc(o.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-9.3-9.2C1.4 7.4 3.6 4 7 4c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8C19.5 15.4 12 20 12 20z"/></svg></button>
@@ -590,6 +655,7 @@ function card(o, opts) {
       <div class="row1"><h3 class="name">${o.url ? `<a ${link}>${esc(o.name)}</a>` : esc(o.name)}</h3><span class="price">${price}</span></div>
       <div class="row2"><span class="where">${esc(meta)}</span>${o.was ? `<s>${fmt(o.was)} €</s>` : ""}</div>
       <div class="storeline${list.length === 1 ? " one" : ""}" title="${esc(list.join(", "))}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg><span>${esc(where)}</span></div>
+      ${ends ? `<div class="ends${o.ended || (left != null && left < 0) ? " over" : left != null && left <= 1 ? " soon" : ""}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${esc(ends)}</div>` : ""}
       ${notes ? `<div class="note">${esc(notes)}</div>` : ""}
       ${o.best === 0 ? `<div class="cheaper">Muualla ${fmt(o.bestPrice)} €${/kpl =/.test(o.note) ? " kappaleelta" : ""}</div>` : ""}
       ${opts && opts.compact ? "" : `<div class="actions"><button type="button" class="pill ghost small" data-watch="${o.i}">Vahdi</button>${o.url ? `<a class="pill small" ${link}>Kaupan sivulle</a>` : `<button type="button" class="pill small" data-fav="${o.i}">${fav ? "Suosikeissa" : "Suosikiksi"}</button>`}</div>`}
@@ -598,7 +664,10 @@ function card(o, opts) {
 }
 function filtered() {
   const words = norm(state.q).split(/\s+/).filter(Boolean);
-  let list = offers.filter(o => visible(o) && (o.pct || 0) >= state.minPct && (!state.cat || o.cat === state.cat) &&
+  const base = state.view === "fav" ? offers.concat(ghosts) : offers;
+  const liked = state.view === "tips" ? topInterests() : null;
+  let list = base.filter(o => (visible(o) || o.ended) && (o.pct || 0) >= state.minPct && (!state.cat || o.cat === state.cat) &&
+    (!liked || liked.some(x => likes(x, o))) &&
     (!state.sub || o.sub === (state.sub === "-" ? "" : state.sub)) &&
     words.every(w => o.key.includes(w)) && (!state.watchOnly || isHit(o)) && (state.view !== "fav" || favs.has(o.id)));
   const byName = (a, b) => a.name.localeCompare(b.name, "fi");
@@ -606,6 +675,10 @@ function filtered() {
   if (state.sort === "low") list.sort((a, b) => (a.price ?? 1e9) - (b.price ?? 1e9) || byName(a, b));
   if (state.sort === "best") list.sort((a, b) => ((b.best === 1) - (a.best === 1)) || (b.pct || 0) - (a.pct || 0) || byName(a, b));
   if (state.sort === "az") list.sort(byName);
+  if (state.view === "fav") {   // saved offers: the ones ending soonest first, ended ones last
+    const left = o => o.ended ? 1e6 : daysLeft(o.valid) ?? 1e5;
+    list.sort((a, b) => left(a) - left(b));
+  }
   return list;
 }
 function render() {
@@ -617,6 +690,7 @@ function render() {
   $("count").innerHTML = `<strong>${list.length.toLocaleString("fi-FI")}</strong> ${state.view === "fav" ? "suosikkia" : "tarjousta"}`;
   const chips = [];
   if (state.view === "fav") chips.push(["view", "Suosikit"]);
+  if (state.view === "tips") chips.push(["view", "Sinua kiinnostavat"]);
   if (state.watchOnly) chips.push(["watch", "Vahtien osumat"]);
   $("edgeDot").hidden = !(state.cat || state.minPct > (D.minPct || 0) || state.on.size < STORES.length);
   if (state.cat) chips.push(["cat", state.cat]);
@@ -626,7 +700,8 @@ function render() {
   const empty = $("empty");
   empty.hidden = list.length > 0;
   if (!list.length) empty.innerHTML = state.view === "fav" && !favs.size
-    ? "<strong>Ei vielä suosikkeja</strong>Napauta sydäntä tarjouksen kuvassa. Suosikit säilyvät tämän selainistunnon ajan."
+    ? "<strong>Ei vielä suosikkeja</strong>Napauta sydäntä tarjouksen kuvassa. " + (APP ? "Suosikit säilyvät sovelluksessa, ja näet täältä milloin ne päättyvät." : "Suosikit säilyvät tämän selainistunnon ajan.")
+    : state.view === "tips" ? "<strong>Ei vielä tarpeeksi tietoa</strong>Kun avaat, tallennat ja vahdit tarjouksia, sovellus oppii mistä tuotteista pidät."
     : "<strong>Ei tarjouksia näillä rajauksilla</strong>Kokeile toista hakusanaa, pienempää alennusrajaa tai valitse lisää kauppoja.";
   renderPager(pages);
   document.querySelectorAll("[data-view]").forEach(b => { if (b.closest(".links")) b.setAttribute("aria-current", String(b.dataset.view === state.view)); });
@@ -662,7 +737,7 @@ $("activeChips").addEventListener("click", e => {
 const FOOD = new Set(["Hedelmät ja vihannekset", "Liha ja kala", "Maito ja juusto", "Leivät ja leivonnaiset", "Valmisruoat ja pakasteet", "Kuivat, mausteet ja kastikkeet", "Makeiset ja naposteltavat", "Juomat ja kahvi", "Ruoka, muut"]);
 function renderRail() {
   let list, title;
-  if (favs.size) { list = offers.filter(o => favs.has(o.id)); title = "Suosikkisi"; }
+  if (favs.size) { list = offers.concat(ghosts).filter(o => favs.has(o.id)); title = "Suosikkisi"; }
   else {
     const seen = new Set();
     list = offers.filter(o => FOOD.has(o.cat) && o.img && o.price && visible(o)).sort((a, b) => (b.pct || 0) - (a.pct || 0))
@@ -680,20 +755,28 @@ document.querySelectorAll("[data-rail]").forEach(b => b.addEventListener("click"
 function onCards(e) {
   const f = e.target.closest("[data-fav]");
   if (f) {
-    const o = offers[+f.dataset.fav];
-    favs.has(o.id) ? favs.delete(o.id) : favs.add(o.id);
+    const o = byI(+f.dataset.fav);
+    if (favs.has(o.id)) { favs.delete(o.id); delete favData[o.id]; }
+    else {
+      favs.add(o.id); bump(o, 3);
+      favData[o.id] = {names: o.names, cat: o.cat, sub: o.sub, name: o.name, price: o.price, unit: o.unit, was: o.was, pct: o.pct,
+                       note: o.note, valid: o.valid, url: o.url, img: o.img, pid: o.pid, brand: o.brand};
+    }
+    if (o.ended && !favs.has(o.id)) { ghosts = ghosts.filter(g => g !== o); }
     saveFavs(); render(); renderRail(); return;
   }
   const s = e.target.closest("[data-stores]");
   if (s) {
-    const o = offers[+s.dataset.stores], body = s.closest(".card").querySelector(".body");
+    const o = byI(+s.dataset.stores), body = s.closest(".card").querySelector(".body");
     const old = body.querySelector(".storelist");
     if (old) { old.remove(); return; }
     body.querySelector(".row2").insertAdjacentHTML("afterend", `<div class="storelist">${o.names.map(esc).join(", ")}</div>`);
     return;
   }
   const w = e.target.closest("[data-watch]");
-  if (w) watchProduct(offers[+w.dataset.watch]);
+  if (w) { watchProduct(byI(+w.dataset.watch)); return; }
+  const a = e.target.closest("a[href]"), c = e.target.closest(".card");
+  if (a && c) bump(byI(+c.dataset.i), 1);
 }
 $("grid").addEventListener("click", onCards);
 $("track").addEventListener("click", onCards);
@@ -728,7 +811,7 @@ $("qBtn").addEventListener("click", () => { state.q = $("q").value; state.page =
 // cat = product group, store = everything in one store, pid = one specific product (same EAN in any store).
 const TYPES = [["q", "Tuote / hakusana"], ["brand", "Tuoteperhe / merkki"], ["cat", "Tuoteryhmä"], ["store", "Kauppa"], ["pid", "Tietty tuote"]];
 let watches = store.get("watches", []).filter(w => w && TYPES.some(t => t[0] === w.t) && w.v);
-const saveWatches = () => store.set("watches", watches);
+const saveWatches = () => { store.set("watches", watches); syncApp(); };
 // Email alerts go to the site's own Netlify function. A page opened from a file has no server, so no email there.
 const ALERT_API = CONFIG && typeof CONFIG.api === "string" && CONFIG.api && /^https?:$/.test(location.protocol) ? CONFIG.api : "";
 let wType = "q", pidLabel = "", pidValue = "";
@@ -772,6 +855,7 @@ function initWatchForm() {
   setType("q");
 }
 function watchProduct(o) {
+  bump(o, 3);
   const f = $("watchForm");
   $("types").querySelector('[data-t="pid"]').hidden = false;
   setType("pid");
@@ -867,6 +951,78 @@ function renderSources() {
   $("footStores").innerHTML = CHAINS.map(ch => `<li>${esc(ch)}</li>`).join("");
 }
 
+
+// ---------- Android app: interests, sync to the phone's background check, back button
+// What you look at (opened offers, favourites, alerts, chosen product families) builds a small local profile.
+// It never leaves the phone: the app's background check reads it to find new offers you may like.
+const HALF_LIFE = 30 * 864e5;   // a month-old look counts half
+let interest = store.get("interest", {});
+function bump(o, w) {
+  if (!APP || !o || !o.cat || o.cat === "Muut") return;
+  const now = Date.now();
+  const add = k => { const [s0, t] = interest[k] || [0, now]; interest[k] = [s0 * Math.pow(0.5, (now - t) / HALF_LIFE) + w, now]; };
+  add(o.sub ? "s|" + o.cat + "|" + o.sub : "c|" + o.cat);
+  if (o.brand) add("b|" + o.brand);
+  store.set("interest", interest); syncApp(); renderInterests();
+}
+function topInterests() {
+  const now = Date.now();
+  return Object.entries(interest).map(([k, [s0, t]]) => [k, s0 * Math.pow(0.5, (now - t) / HALF_LIFE)])
+    .filter(([, v]) => v >= 2.5).sort((a, b) => b[1] - a[1]).slice(0, 8)
+    .map(([k]) => { const [t, a, b] = k.split("|"); return t === "s" ? {k, t: "sub", cat: a, v: b} : t === "c" ? {k, t: "cat", v: a} : {k, t: "brand", v: a}; });
+}
+function likes(x, o) {
+  if (x.t === "sub") return o.cat === x.cat && o.sub === x.v;
+  if (x.t === "cat") return o.cat === x.v;
+  return !!o.brand && norm(o.brand) === norm(x.v);
+}
+let syncTimer;
+function syncApp() {
+  if (!APP) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    const tips = store.get("tips", true);
+    const favList = [...favs].map(id => { const o = offers.find(x => x.id === id) || favData[id]; return o ? {id, name: o.name, valid: o.valid || ""} : null; }).filter(Boolean);
+    try {
+      APP.sync(JSON.stringify({watches, tips, interests: tips ? topInterests().map(({k, ...x}) => x) : [],
+        stores: state.on && state.on.size < STORES.length ? [...state.on] : [], favs: favList}));
+    } catch (e) {}
+  }, 400);
+}
+function renderInterests() {
+  if (!APP) return;
+  const top = topInterests();
+  $("interestList").innerHTML = top.length
+    ? top.map(x => `<button type="button" data-forget="${esc(x.k)}" aria-label="Unohda ${esc(x.v)}">${esc(x.v)} ×</button>`).join("")
+    : `<span class="formnote">Sovellus ei ole vielä oppinut mistä pidät. Avaa, tallenna ja vahdi tarjouksia, niin ehdotukset tarkentuvat.</span>`;
+}
+function initApp() {
+  $("apkLink").hidden = !!APP;
+  if (!APP) return;
+  $("appPanel").hidden = false;
+  $("watchLead").textContent = "Vahdit tallentuvat puhelimeen. Sovellus tarkistaa tarjoukset muutaman tunnin välein ja ilmoittaa uusista osumista.";
+  const allowed = (() => { try { return APP.notificationsAllowed(); } catch (e) { return true; } })();
+  $("appNote").innerHTML = allowed ? "Ilmoitukset ovat päällä." : `Ilmoitukset ovat estetty. <button type="button" class="linkbtn" id="askNotif">Salli ilmoitukset</button>`;
+  const ask = $("askNotif"); if (ask) ask.addEventListener("click", () => { try { APP.askNotifications(); } catch (e) {} });
+  $("tipsToggle").checked = store.get("tips", true);
+  $("tipsToggle").addEventListener("change", e => { store.set("tips", e.target.checked); syncApp(); });
+  $("testNotif").addEventListener("click", () => { try { APP.testNotification(); } catch (e) {} });
+  $("tipsView").addEventListener("click", () => { state.view = "tips"; state.watchOnly = false; state.page = 1; closeDrawers(); render(); document.querySelector(".shop").scrollIntoView(); });
+  $("clearInterest").addEventListener("click", () => { interest = {}; store.set("interest", interest); renderInterests(); syncApp(); });
+  $("interestList").addEventListener("click", e => {
+    const b = e.target.closest("[data-forget]"); if (!b) return;
+    delete interest[b.dataset.forget]; store.set("interest", interest); renderInterests(); syncApp();
+  });
+  renderInterests();
+}
+// The phone's back button: close a drawer, then leave a special view, and only then leave the app.
+window.appBack = () => {
+  if (document.querySelector(".drawer.on")) { closeDrawers(); return true; }
+  if (state.view !== "all" || state.watchOnly) { state.view = "all"; state.watchOnly = false; state.page = 1; render(); return true; }
+  return false;
+};
+
+// ---------- start
 if (EMBEDDED) boot(EMBEDDED);
 else fetch("offers.json", {cache: "no-cache"}).then(r => r.json()).then(boot).catch(() => { $("count").textContent = "Tarjousten lataus epäonnistui. Päivitä sivu."; });
 </script>

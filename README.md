@@ -59,6 +59,21 @@ merkitään sivulla), ja sähköpostikenttä on piilossa. Kun vahtipalvelu on py
 **Settings → Secrets and variables → Actions → Variables → `ALERT_API`**, ja seuraava julkaisu ottaa sen käyttöön.
 Kansion `netlify/` funktiot ovat valmiina, jos sivu joskus siirretään maksulliselle Netlify-tasolle.
 
+## Android-sovellus
+
+Lataus: https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk
+(puhelimessa pitää sallia asennus tuntemattomista lähteistä).
+
+- Sovellus avaa saman sivun (`android/`, Java, WebView), joten sivun muutokset näkyvät siinä heti ilman uutta APK:ta.
+- Suosikit säilyvät pysyvästi, ja niiden voimassaolo näkyy kortissa ("Päättyy huomenna", "Päättynyt").
+- `OfferWorker` hakee `offers.json`:n noin 3 tunnin välein ja ilmoittaa vahtien osumista, uusista aleista usein
+  katsottujen tuotteiden kaltaisista tuotteista ja tallennetuista tarjouksista, jotka päättyvät tänään tai huomenna.
+  Katseluhistoria (avatut, tallennetut ja vahditut tuotteet) pysyy puhelimessa; sen voi tyhjentää Hintavahdit-paneelista.
+- `.github/workflows/android.yml` rakentaa APK:n aina kun `android/`-kansio muuttuu ja vaihtaa sen yllä olevaan osoitteeseen.
+- Allekirjoitusavain `android/app/debug.keystore` on repossa, jotta uusi versio asentuu vanhan päälle. Koska repo on julkinen,
+  oman avaimen voi siirtää salaisuuksiin: `APP_KEYSTORE_B64` (avain base64-muodossa), `APP_KEYSTORE_PASSWORD`, `APP_KEY_ALIAS`,
+  `APP_KEY_PASSWORD`. Avaimen vaihto vaatii sovelluksen poistamisen ja uudelleenasennuksen kerran.
+
 ## Sähköpostivahdit (Netlify-versio)
 
 Kun käyttäjä lisää vahdin ja antaa sähköpostin, sivu lähettää sen funktiolle `/api/vahti`. Vahti tallentuu Netlify Blobsiin
