@@ -482,6 +482,23 @@ function keep(storage) {   // localStorage for settings and alerts, sessionStora
   };
 }
 const store = keep(window.localStorage), session = keep(window.sessionStorage);
+// The app keeps a copy of everything saved here. Browser storage belongs to one web address, so after a move to a new
+// address (alet.aaje.fi) the page starts empty; then it takes the app's copy back before anything else reads it.
+(function restoreFromApp() {
+  try {
+    if (!window.TarjousApp || !TarjousApp.restore || Object.keys(localStorage).some(k => k.startsWith("jkl-"))) return;
+    const saved = JSON.parse(TarjousApp.restore() || "null");
+    if (saved) for (const [k, v] of Object.entries(saved)) if (k.startsWith("jkl-")) localStorage.setItem(k, v);
+  } catch (e) {}
+})();
+function backupToApp() {
+  try {
+    if (!window.TarjousApp || !TarjousApp.backup) return;
+    const all = {};
+    for (const k of Object.keys(localStorage)) if (k.startsWith("jkl-")) all[k] = localStorage.getItem(k);
+    TarjousApp.backup(JSON.stringify(all));
+  } catch (e) {}
+}
 
 // Line icons for the product groups (24x24, stroke).
 const ICON = {
@@ -1016,6 +1033,7 @@ function syncApp() {
   syncTimer = setTimeout(() => {
     const tips = store.get("tips", false);
     const favList = [...favs].map(id => { const o = offers.find(x => x.id === id) || favData[id]; return o ? {id, name: o.name, valid: o.valid || ""} : null; }).filter(Boolean);
+    backupToApp();
     try {
       APP.sync(JSON.stringify({watches, tips, interests: tips ? topInterests().map(({k, ...x}) => x) : [],
         stores: state.on && state.on.size < STORES.length ? [...state.on] : [], favs: favList}));

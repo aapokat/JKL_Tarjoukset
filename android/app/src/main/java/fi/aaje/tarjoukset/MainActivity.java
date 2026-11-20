@@ -29,6 +29,7 @@ import androidx.core.app.NotificationManagerCompat;
 public class MainActivity extends Activity {
     static final String SITE = "https://aapokat.github.io/JKL_Tarjoukset/";
     static final String HOST = "aapokat.github.io";
+    static final String OWN_DOMAIN = "alet.aaje.fi";   // GitHub forwards the github.io address here once the domain is set
 
     private WebView web;
 
@@ -52,6 +53,7 @@ public class MainActivity extends Activity {
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest req) {
                 Uri u = req.getUrl();
                 if (HOST.equals(u.getHost()) && u.getPath() != null && u.getPath().startsWith("/JKL_Tarjoukset")) return false;
+                if (OWN_DOMAIN.equals(u.getHost())) return false;
                 openOutside(u);   // store pages open in the phone's browser
                 return true;
             }
@@ -174,6 +176,18 @@ public class MainActivity extends Activity {
             String old = p.getString("state", "");
             p.edit().putString("state", json).apply();
             if (!json.equals(old)) OfferWorker.checkSoon(MainActivity.this);
+        }
+
+        /** A copy of the page's saved data (alerts, favourites, settings). Browser storage belongs to one web address,
+         *  so when the site moves to its own domain the page finds its data here and restores it. */
+        @JavascriptInterface
+        public void backup(String json) {
+            getSharedPreferences(OfferWorker.PREFS, MODE_PRIVATE).edit().putString("backup", json).apply();
+        }
+
+        @JavascriptInterface
+        public String restore() {
+            return getSharedPreferences(OfferWorker.PREFS, MODE_PRIVATE).getString("backup", "");
         }
 
         @JavascriptInterface
