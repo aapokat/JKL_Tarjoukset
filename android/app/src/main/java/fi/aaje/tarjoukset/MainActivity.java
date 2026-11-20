@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -17,6 +18,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.core.app.NotificationManagerCompat;
 
 /**
  * The app is the same page as the website, opened in a WebView, plus what a website cannot do:
@@ -104,11 +107,57 @@ public class MainActivity extends Activity {
         }
     }
 
+    /** Asked once when the app first starts. Later the page asks again when an alert is added (askAgain). */
     private void askNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= 33
+        SharedPreferences p = getSharedPreferences(OfferWorker.PREFS, MODE_PRIVATE);
+        if (Build.VERSION.SDK_INT >= 33 && !p.getBoolean("askedNotifications", false)
                 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            p.edit().putBoolean("askedNotifications", true).apply();
             requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
         }
+    }
+
+    /** Covers both the Android 13+ permission and notifications switched off in the phone's settings. */
+    boolean notificationsOn() {
+        return NotificationManagerCompat.from(this).areNotificationsEnabled();
+    }
+
+    /**
+     * Ask again. Android shows its own dialog only a limited number of times; after the user has said no twice,
+     * the only way back is the app's notification settings, so those open instead.
+     */
+    private void askAgain() {
+        if (notificationsOn()) return;
+        if (Build.VERSION.SDK_INT >= 33
+                && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                && (!getSharedPreferences(OfferWorker.PREFS, MODE_PRIVATE).getBoolean("askedNotifications", false)
+                    || shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS))) {
+            getSharedPreferences(OfferWorker.PREFS, MODE_PRIVATE).edit().putBoolean("askedNotifications", true).apply();
+            requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
+            return;
+        }
+        try {
+            startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName()));
+        } catch (Exception e) {
+            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+        }
+    }
+
+    private void tellPage() {
+        if (web != null) web.evaluateJavascript("window.appPermissionChanged && window.appPermissionChanged()", null);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, String[] perms, int[] results) {
+        super.onRequestPermissionsResult(code, perms, results);
+        tellPage();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        tellPage();   // back from the phone's settings: the page updates its "notifications on/off" line
     }
 
     private static final String OFFLINE = "<!doctype html><meta name=viewport content='width=device-width'>"
@@ -134,13 +183,12 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface
         public boolean notificationsAllowed() {
-            return Build.VERSION.SDK_INT < 33
-                    || checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+            return notificationsOn();
         }
 
         @JavascriptInterface
         public void askNotifications() {
-            runOnUiThread(MainActivity.this::askNotificationPermission);
+            runOnUiThread(MainActivity.this::askAgain);
         }
 
         @JavascriptInterface

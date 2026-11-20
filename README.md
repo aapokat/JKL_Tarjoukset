@@ -54,11 +54,6 @@ Jos jokin muu kauppa ei vastaa, sen edellisen haun tarjoukset pidetään, eikä 
 GitHub Pages on ilmainen eikä rajoita julkaisujen määrää. Netlifyn ilmaistaso ei sovi tähän: jokainen julkaisu maksaa
 15 krediittiä 300:sta kuukaudessa, ja tarjoukset julkaistaan joka päivä.
 
-Sähköposti-ilmoitukset tarvitsevat palvelimen, jota GitHub Pagesissa ei ole. Ilman sitä vahdit toimivat selaimessa (osumat
-merkitään sivulla), ja sähköpostikenttä on piilossa. Kun vahtipalvelu on pystyssä, sen osoite laitetaan repon muuttujaan
-**Settings → Secrets and variables → Actions → Variables → `ALERT_API`**, ja seuraava julkaisu ottaa sen käyttöön.
-Kansion `netlify/` funktiot ovat valmiina, jos sivu joskus siirretään maksulliselle Netlify-tasolle.
-
 ## Android-sovellus
 
 Lataus: https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk
@@ -74,51 +69,12 @@ Lataus: https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-late
   oman avaimen voi siirtää salaisuuksiin: `APP_KEYSTORE_B64` (avain base64-muodossa), `APP_KEYSTORE_PASSWORD`, `APP_KEY_ALIAS`,
   `APP_KEY_PASSWORD`. Avaimen vaihto vaatii sovelluksen poistamisen ja uudelleenasennuksen kerran.
 
-## Sähköpostivahdit (Netlify-versio)
+## Hintavahdit
 
-Kun käyttäjä lisää vahdin ja antaa sähköpostin, sivu lähettää sen funktiolle `/api/vahti`. Vahti tallentuu Netlify Blobsiin
-tilassa "odottaa", ja käyttäjä saa vahvistusviestin. Vahti alkaa vasta, kun linkkiä klikataan, joten kukaan ei voi tilata viestejä
-toisen osoitteeseen. Heti vahvistuksen jälkeen lähtee ensimmäinen kooste tarjouksista, jotka sopivat vahtiin jo nyt.
-Sen jälkeen ajastettu tarkistus lähettää joka aamu yhden koosteen uusista osumista. Sama tarjous lähetetään vain kerran.
-
-- Jokaisessa viestissä on linkit yhden tai kaikkien vahtien poistoon. Poisto pyytää vielä napin painalluksen, jotta sähköpostin
-  linkkiskannerit eivät poista vahteja vahingossa. Viesteissä on myös List-Unsubscribe-otsake (Gmailin "Peru tilaus" -nappi).
-- Poistettu vahti poistetaan kokonaan, sähköpostiosoite mukaan lukien. Vahvistamaton vahti poistuu viikon kuluttua.
-- Rajat: 20 vahtia per osoite, 8 uutta per osoite per vuorokausi ja 150 uutta vuorokaudessa yhteensä. Lomakkeessa on piilokenttä botteja vastaan.
-
-### Sähköpostin lähetys: valitse toinen
-
-Netlify ei lähetä sähköpostia itse, joten tarvitaan lähetyspalvelu. Ympäristömuuttujat asetetaan Netlifyssä
-**Project configuration → Environment variables**.
-
-**A. Gmail (nopein aloittaa).** Ota Google-tilillä käyttöön kaksivaiheinen tunnistus ja luo sovellussalasana
-(myaccount.google.com → Turvallisuus → Sovellussalasanat).
-
-| Muuttuja | Arvo |
-| --- | --- |
-| `SMTP_HOST` | `smtp.gmail.com` |
-| `SMTP_PORT` | `465` |
-| `SMTP_USER` | Gmail-osoitteesi |
-| `SMTP_PASS` | sovellussalasana (16 merkkiä) |
-| `MAIL_FROM` | `Jyväskylän tarjoukset <Gmail-osoitteesi>` |
-
-Gmailin raja on noin 500 viestiä vuorokaudessa, mikä riittää hyvin.
-
-**B. Resend (siistimpi, oma lähettäjäosoite).** Luo tili resend.comissa, lisää oma verkkotunnus ja sen DNS-tietueet
-(esim. Cloudflaressa), ja luo API-avain.
-
-| Muuttuja | Arvo |
-| --- | --- |
-| `RESEND_API_KEY` | `re_...` |
-| `MAIL_FROM` | `Jyväskylän tarjoukset <vahti@oma-verkkotunnus.fi>` |
-
-Ilmaisessa tasossa on 3 000 viestiä kuukaudessa ja 100 vuorokaudessa.
-
-Jos lähetystä ei ole asetettu, sivu toimii silti ja vahdit näkyvät selaimessa, mutta sähköpostitilaus kertoo, ettei ilmoituksia ole vielä käytössä.
-
-### Lokit
-
-Netlifyssä **Logs → Functions → vahdit-tarkistus** näyttää jokaisen aamun tuloksen, esim. `alert check: {"emails":3,"items":12,"errors":[]}`.
+Vahdit tallentuvat käyttäjän selaimeen (localStorage), eikä niitä lähetetä minnekään. Kun käyttäjä palaa sivulle,
+sivu vertaa vahtien nykyisiä osumia edellisen käynnin osumiin ja kertoo uusista ("Vahtisi löysivät 4 uutta tarjousta").
+Puhelinilmoitukset tulevat Android-sovelluksesta. Sähköposti-ilmoitukset poistettiin: niiden ilmainen lähetys ei
+riittäisi noin sadalle käyttäjälle luotettavasti.
 
 ## K-kaupat omalta koneelta
 
@@ -149,10 +105,6 @@ F12 → Network, suodatus `RemoteFilteredProducts`, ja kopioimalla pyynnön `sha
 
 | Tiedosto | Mitä tekee |
 | --- | --- |
-| `netlify.toml` | Netlifyn build-asetukset. |
-| `netlify/functions/vahti.mjs` | Vahdin tilaus (`/api/vahti`), vahvistus- ja poistolinkit (`/vahti`). |
-| `netlify/functions/vahdit-tarkistus.mjs` | Päivittäinen tarkistus ja koosteviestit. |
-| `netlify/functions/lib/` | Tallennus (Blobs), täsmäys, viestipohjat ja lähetys (Resend tai SMTP). |
 | `site/data/stores.json` | Mitkä K- ja S-kaupat haetaan (kaupan tunnus → nimi). |
 | `site/fetch_offers.py` | Hakee skriptillä luettavat kaupat. Vain Pythonin vakiokirjasto. `python site/fetch_offers.py lidl` hakee vain yhden lähteen. |
 | `site/collect_browser.py` | Ajaa `collectors/k-ruoka.js`:n oikeassa selaimessa (Playwright). |
@@ -160,18 +112,16 @@ F12 → Network, suodatus `RemoteFilteredProducts`, ja kopioimalla pyynnön `sha
 | `site/catalog.py` | Yhteiset tuoteryhmät: kauppojen omat kategoriat ja tuotenimet → 19 ryhmää. |
 | `site/build.py` | Yhdistää datan ja samat tarjoukset, laskee hintavertailun ja kirjoittaa `public/index.html` ja `public/offers.json`. Lisäksi `preview.html`, jossa data on sivun sisällä. |
 | `site/template.html` | Sivu. |
+| `android/` | Android-sovellus (WebView + taustatarkistus ja ilmoitukset). |
+| `tools/windows/` | K-keräys kotikoneelta ja sen ajastus. |
 
 Tarjousrivi kauppojen hakutiedostoissa: `[kauppa, kaupan kategoria, nimi, hinta, yksikkö, normaalihinta, alennus-%, huomautus, voimassa, linkki, kuva, tuotetunnus, merkki]`.
 
 ## Paikallinen kehitys
 
 ```
-npm install
-python3 site/build.py
-npx netlify dev        # sivu ja funktiot osoitteessa http://localhost:8888
+python3 site/build.py      # kirjoittaa public/ ja preview.html (data sivun sisällä, avautuu suoraan selaimessa)
+python3 -m http.server -d public 8000
 ```
-
-Sähköpostin voi testata paikallisesti kirjoittamalla SMTP-asetukset tiedostoon `.env` (ei mene gitiin).
-Ajastetun tarkistuksen voi ajaa käsin: `curl -X POST http://localhost:8888/.netlify/functions/vahdit-tarkistus`.
 
 Hinnat kopioidaan kauppojen omilta sivuilta. Tarkista hinta aina kaupassa.

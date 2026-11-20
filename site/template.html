@@ -167,7 +167,7 @@ button.chip{cursor:pointer}
 .banner h2{margin:0 0 22px;font-family:var(--display);font-size:clamp(30px,3.8vw,48px);line-height:1.04;font-weight:800;letter-spacing:-.02em;max-width:13ch}
 .banner form{display:flex;background:#fff;border-radius:999px;padding:5px;max-width:420px}
 .banner input{flex:1;border:0;outline:0;background:none;font:inherit;padding:8px 14px;min-width:0}
-.banner .pill{background:var(--pill)}
+.banner .pill{background:#fff;color:var(--ink)}
 .banner .side-text strong{display:block;font-size:15px;margin-bottom:6px}
 .banner .side-text p{margin:0;color:#B9BDC6;font-size:14px;max-width:46ch}
 .banner .msg{margin:10px 4px 0;font-size:13px;color:#D7DAE0;min-height:1.2em}
@@ -226,6 +226,13 @@ button.chip{cursor:pointer}
 .edgetab svg{width:14px;height:14px}
 .edgetab .dot{width:8px;height:8px;border-radius:50%;background:var(--sale)}
 .side-drawer{left:0;right:auto;transform:translateX(-100%)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:38;display:flex;align-items:center;gap:12px;
+  background:var(--pill);color:#fff;border-radius:18px;padding:10px 10px 10px 18px;box-shadow:0 12px 34px rgba(24,25,28,.28);
+  width:max-content;max-width:calc(100% - 32px);font-size:14px}
+.toast[hidden]{display:none}
+.toast .pill{background:#fff;color:var(--ink)}
+.toastx{border:0;background:none;color:#fff;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;opacity:.75}
+.newhit{position:absolute;bottom:12px;right:12px;background:var(--pill);color:#fff;border-radius:7px;font-size:12px;font-weight:700;padding:3px 8px}
 .side-drawer .catlist li.open>button{position:sticky;top:0;z-index:1}
 
 @media (max-width:1060px){
@@ -344,15 +351,11 @@ button.chip{cursor:pointer}
   <section class="banner" aria-labelledby="bannerTitle">
     <div>
       <h2 id="bannerTitle">Älä missaa seuraavaa alea</h2>
-      <form id="bannerForm" autocomplete="on">
-        <input name="email" type="email" placeholder="Sähköpostisi" aria-label="Sähköposti" required>
-        <button class="pill" type="submit">Luo vahti</button>
-      </form>
-      <p class="msg" id="bannerMsg" role="status"></p>
+      <button class="pill bannerbtn" type="button" data-open="watch">Luo hintavahti</button>
     </div>
     <div class="side-text">
       <strong>Hintavahti kertoo, kun ale osuu</strong>
-      <p>Valitse tuote, merkki, tuoteryhmä tai kauppa. Osumat merkitään sivulle, ja Android-sovellus ilmoittaa niistä puhelimeen.</p>
+      <p>Valitse tuote, merkki, tuoteryhmä tai kauppa. Kun palaat sivulle, näet heti mitä uutta vahdit löysivät. Android-sovellus ilmoittaa osumista puhelimeen.</p>
     </div>
   </section>
 
@@ -378,11 +381,16 @@ button.chip{cursor:pointer}
 </main>
 
 <button class="edgetab" id="edgeTab" type="button" data-open="filters" aria-label="Rajaa tarjouksia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg><span class="lbl">Rajaa</span><span class="dot" id="edgeDot" hidden></span></button>
+<div class="toast" id="hitToast" role="status" hidden>
+  <span id="hitText"></span>
+  <button class="pill small" type="button" id="hitShow">Näytä</button>
+  <button class="toastx" type="button" id="hitClose" aria-label="Sulje ilmoitus">×</button>
+</div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="watchDrawer" aria-labelledby="watchTitle" aria-modal="true" role="dialog">
   <header><h2 id="watchTitle">Hintavahdit</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
   <div class="content">
-    <p class="lead" id="watchLead">Sivua käytetään ilman kirjautumista. Vahdit tallentuvat tähän selaimeen ja osumat merkitään punaisella reunalla. Jos haluat ilmoitukset sähköpostiin, kirjoita osoitteesi.</p>
+    <p class="lead" id="watchLead">Vahdit tallentuvat tähän selaimeen. Osumat merkitään punaisella reunalla, ja kun palaat sivulle, kerromme mitä uutta vahdit löysivät.</p>
     <form id="watchForm" class="form" autocomplete="off">
       <div class="types" role="radiogroup" aria-label="Mitä vahditaan" id="types"></div>
       <label id="fQ">Tuote tai hakusana<input name="q" maxlength="60" placeholder="esim. juhla mokka"></label>
@@ -394,8 +402,6 @@ button.chip{cursor:pointer}
         <label>Hinta enintään €<input name="max" inputmode="decimal" maxlength="8" placeholder="valinnainen"></label>
         <label>Alennus vähintään %<input name="minPct" inputmode="numeric" maxlength="2" placeholder="valinnainen"></label>
       </div>
-      <label id="mailField" hidden>Sähköposti (valinnainen)<input name="email" type="email" maxlength="120" placeholder="ilmoitukset sähköpostiin" autocomplete="email"></label>
-      <label hidden aria-hidden="true">Älä täytä<input name="website" tabindex="-1" autocomplete="off"></label>
       <button type="submit" class="pill">Lisää vahti</button>
       <p class="formnote" id="watchNote" role="status"></p>
     </form>
@@ -419,7 +425,6 @@ button.chip{cursor:pointer}
 
 <script>
 const EMBEDDED = __DATA__;
-const CONFIG = __CONFIG__;
 const $ = id => document.getElementById(id);
 const fmt = n => n.toFixed(2).replace(".", ",");
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -522,7 +527,7 @@ function boot(data) {
   const dates = Object.values(data.sources || {}).filter(Boolean).sort();
   $("heroSub").textContent = "Vähintään " + (data.minPct || 20) + " % alennukset " + STORES.length + " kaupasta." + (dates.length ? " Päivitetty " + when(dates[dates.length - 1]) + "." : "");
   fromHash();
-  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp();
+  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits();
 }
 // Links from phone notifications: #hits = alert hits, #fav = saved offers, #tips = offers like the ones you look at.
 function fromHash() {
@@ -651,7 +656,7 @@ function card(o, opts) {
       <button type="button" class="fav" data-fav="${o.i}" aria-pressed="${fav}" aria-label="${fav ? "Poista suosikeista" : "Lisää suosikkeihin"}: ${esc(o.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-9.3-9.2C1.4 7.4 3.6 4 7 4c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8C19.5 15.4 12 20 12 20z"/></svg></button>
       ${chip}
       ${o.pct && o.price ? `<span class="off">−${o.pct} %</span>` : ""}
-      ${o.best === 1 ? `<span class="best">Edullisin</span>` : ""}
+      ${newHits.has(o.id) && !o.ended ? `<span class="newhit">Uusi osuma</span>` : o.best === 1 ? `<span class="best">Edullisin</span>` : ""}
     </div>
     <div class="body">
       <div class="row1"><h3 class="name">${o.url ? `<a ${link}>${esc(o.name)}</a>` : esc(o.name)}</h3><span class="price">${price}</span></div>
@@ -814,8 +819,6 @@ $("qBtn").addEventListener("click", () => { state.q = $("q").value; state.page =
 const TYPES = [["q", "Tuote / hakusana"], ["brand", "Tuoteperhe / merkki"], ["cat", "Tuoteryhmä"], ["store", "Kauppa"], ["pid", "Tietty tuote"]];
 let watches = store.get("watches", []).filter(w => w && TYPES.some(t => t[0] === w.t) && w.v);
 const saveWatches = () => { store.set("watches", watches); syncApp(); };
-// Email alerts go to the site's own Netlify function. A page opened from a file has no server, so no email there.
-const ALERT_API = CONFIG && typeof CONFIG.api === "string" && CONFIG.api && /^https?:$/.test(location.protocol) ? CONFIG.api : "";
 let wType = "q", pidLabel = "", pidValue = "";
 function matches(w, o) {
   if (w.store && !o.names.includes(w.store)) return false;
@@ -852,8 +855,6 @@ function initWatchForm() {
   f.store.innerHTML = `<option value="">Mikä tahansa kauppa</option>` + STORES.map(s => `<option>${esc(s.name)}</option>`).join("");
   const brands = {}; offers.forEach(o => { if (o.brand) brands[o.brand] = (brands[o.brand] || 0) + 1; });
   $("brandList").innerHTML = Object.keys(brands).sort((a, b) => brands[b] - brands[a]).slice(0, 400).map(b => `<option value="${esc(b)}">`).join("");
-  $("mailField").hidden = !ALERT_API;
-  f.email.value = store.get("email", "");
   setType("q");
 }
 function watchProduct(o) {
@@ -872,35 +873,15 @@ function renderWatchCount() {
   $("watchOnlyRow").hidden = !watches.length;
   $("watchOnly").textContent = state.watchOnly ? "Näytä kaikki tarjoukset" : "Näytä vain vahtien osumat";
 }
+let newHits = new Set();
 function renderWatches() {
   $("watchList").innerHTML = watches.map((w, i) => {
     const n = offers.filter(o => matches(w, o)).length, [k, s] = describe(w);
     return `<li><span><span class="k">${esc(k)}</span>${esc(s)}</span><span class="n" title="osumaa nyt">${n}</span><button type="button" data-unwatch="${i}" aria-label="Poista vahti ${esc(s)}">×</button></li>`;
   }).join("");
-  if (!ALERT_API) $("watchLead").textContent = "Sivua käytetään ilman kirjautumista. Vahdit tallentuvat tähän selaimeen ja osumat merkitään punaisella reunalla.";
 }
 const num = v => { const n = Number(String(v || "").replace(",", ".").replace(/[^0-9.]/g, "")); return isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null; };
-const ERR = {
-  email: "Tarkista sähköpostiosoite.",
-  limit: "Tälle osoitteelle on jo paljon vahteja tai lisäsit tänään monta. Kokeile huomenna tai poista vanhoja vahteja sähköpostin linkistä.",
-  busy: "Vahteja on lisätty tänään poikkeuksellisen paljon. Kokeile huomenna uudelleen.",
-  send: "Vahvistusviestin lähetys epäonnistui. Tarkista osoite tai kokeile hetken päästä uudelleen.",
-  mail_not_configured: "Sähköposti-ilmoitukset eivät ole vielä käytössä tällä sivulla."
-};
-async function sendAlert(w, email, website) {
-  try {
-    const r = await fetch(ALERT_API, {method: "POST", headers: {"content-type": "application/json"},
-      body: JSON.stringify({email, t: w.t, v: w.v, label: w.label || "", store: w.store || "", max: w.max || "", minPct: w.minPct || "", website: website || ""})});
-    const res = await r.json().catch(() => ({}));
-    if (res.ok && res.exists) return "Sinulla on jo sama vahti sähköpostissa, joten uutta vahvistusta ei tarvita.";
-    if (res.ok) { store.set("email", email); return "Lähetimme vahvistusviestin osoitteeseen " + email + ". Ilmoitukset alkavat, kun klikkaat viestin linkkiä."; }
-    return (ERR[res.error] || "Sähköpostivahdin tallennus ei onnistunut. Kokeile myöhemmin uudelleen.") + " Vahti toimii silti tällä sivulla.";
-  } catch (err) {
-    return "Sähköpostivahdin tallennus ei onnistunut. Kokeile myöhemmin uudelleen. Vahti toimii silti tällä sivulla.";
-  }
-}
-let mailBusy = false;
-$("watchForm").addEventListener("submit", async e => {
+$("watchForm").addEventListener("submit", e => {
   e.preventDefault();
   const f = e.target, note = $("watchNote");
   const w = {t: wType, v: "", label: "", store: f.store.value || "", max: num(f.max.value), minPct: Math.min(99, Math.round(num(f.minPct.value) || 0)) || null};
@@ -910,18 +891,15 @@ $("watchForm").addEventListener("submit", async e => {
   if (wType === "store") { w.v = f.store.value; w.store = ""; }
   if (wType === "pid") { w.v = pidValue; w.label = pidLabel; }
   if (!w.v || ((wType === "q" || wType === "brand") && w.v.length < 2)) { note.textContent = wType === "store" ? "Valitse kauppa." : "Kirjoita vähintään kaksi merkkiä."; return; }
-  const email = (f.email.value || "").trim();
-  if (email && !f.email.checkValidity()) { note.textContent = "Tarkista sähköpostiosoite."; return; }
   watches.push(w); saveWatches();
   f.q.value = ""; f.brand.value = ""; f.max.value = ""; f.minPct.value = "";
   const n = offers.filter(o => matches(w, o)).length;
   let msg = n ? "Vahti löysi " + n + " tarjousta. Ne näkyvät punaisella reunalla." : "Ei osumia juuri nyt. Vahti jää odottamaan.";
-  if ((w.t === "store" || w.t === "cat") && n > 60 && !w.max && !w.minPct) msg += " Vinkki: rajaa alennusprosentilla, niin viesteihin tulee vain parhaat.";
+  if ((w.t === "store" || w.t === "cat") && n > 60 && !w.max && !w.minPct) msg += " Vinkki: rajaa alennusprosentilla, niin ilmoituksiin tulee vain parhaat.";
+  markSeen(offers.filter(o => matches(w, o)));   // shown right here, so not "new" on the next visit
   renderWatches(); render(); renderRail();
-  if (!email || !ALERT_API || mailBusy) { note.textContent = msg; return; }
-  mailBusy = true; f.querySelector("[type=submit]").disabled = true; note.textContent = msg + " Lähetetään…";
-  note.textContent = msg + " " + await sendAlert(w, email, f.website.value);
-  mailBusy = false; f.querySelector("[type=submit]").disabled = false;
+  note.textContent = msg;
+  if (APP) askForNotifications(note, msg);
 });
 $("watchList").addEventListener("click", e => {
   const b = e.target.closest("[data-unwatch]"); if (!b) return;
@@ -930,13 +908,6 @@ $("watchList").addEventListener("click", e => {
   renderWatches(); render(); renderRail();
 });
 $("watchOnly").addEventListener("click", () => { state.watchOnly = !state.watchOnly; state.page = 1; render(); closeDrawers(); });
-$("bannerForm").addEventListener("submit", e => {
-  e.preventDefault();
-  const email = e.target.email.value.trim();
-  $("watchForm").email.value = email;
-  $("bannerMsg").textContent = ALERT_API ? "Valitse vielä mitä vahditaan." : "Sähköposti-ilmoitukset eivät ole vielä käytössä. Vahdit toimivat silti tässä selaimessa.";
-  setType("q"); openDrawer("watchDrawer");
-});
 
 // ---------- sources and footer
 function renderSources() {
@@ -1003,9 +974,7 @@ function initApp() {
   if (!APP) return;
   $("appPanel").hidden = false;
   $("watchLead").textContent = "Vahdit tallentuvat puhelimeen. Sovellus tarkistaa tarjoukset muutaman tunnin välein ja ilmoittaa uusista osumista.";
-  const allowed = (() => { try { return APP.notificationsAllowed(); } catch (e) { return true; } })();
-  $("appNote").innerHTML = allowed ? "Ilmoitukset ovat päällä." : `Ilmoitukset ovat estetty. <button type="button" class="linkbtn" id="askNotif">Salli ilmoitukset</button>`;
-  const ask = $("askNotif"); if (ask) ask.addEventListener("click", () => { try { APP.askNotifications(); } catch (e) {} });
+  renderAppNote();
   $("tipsToggle").checked = store.get("tips", true);
   $("tipsToggle").addEventListener("change", e => { store.set("tips", e.target.checked); syncApp(); });
   $("testNotif").addEventListener("click", () => { try { APP.testNotification(); } catch (e) {} });
@@ -1022,6 +991,51 @@ window.appBack = () => {
   if (document.querySelector(".drawer.on")) { closeDrawers(); return true; }
   if (state.view !== "all" || state.watchOnly) { state.view = "all"; state.watchOnly = false; state.page = 1; render(); return true; }
   return false;
+};
+
+// ---------- what the alerts found since the last visit (alerts and the seen list live in this browser)
+const hitIds = () => offers.filter(o => isHit(o)).map(o => o.id);
+function markSeen(list) {
+  const seen = new Set(store.get("seenHits", []));
+  list.forEach(o => seen.add(o.id));
+  store.set("seenHits", [...seen].slice(-3000));
+}
+function checkNewHits() {
+  if (!watches.length) return;
+  const seen = store.get("seenHits", null), now = hitIds();
+  if (!seen) { store.set("seenHits", now); return; }   // first visit with alerts: nothing is "new" yet
+  const old = new Set(seen);
+  newHits = new Set(now.filter(id => !old.has(id)));
+  if (!newHits.size) return;
+  $("hitText").textContent = newHits.size === 1 ? "Vahtisi löysi uuden tarjouksen edellisen käyntisi jälkeen."
+    : `Vahtisi löysivät ${newHits.size} uutta tarjousta edellisen käyntisi jälkeen.`;
+  $("hitToast").hidden = false;
+  render(); renderRail();
+}
+function closeHitToast() { $("hitToast").hidden = true; store.set("seenHits", hitIds()); }
+$("hitShow").addEventListener("click", () => {
+  closeHitToast(); state.view = "all"; state.watchOnly = true; state.page = 1; render();
+  document.querySelector(".shop").scrollIntoView({behavior: "smooth", block: "start"});
+});
+$("hitClose").addEventListener("click", closeHitToast);
+
+// ---------- app: notification permission when an alert is added
+function notifAllowed() { try { return APP.notificationsAllowed(); } catch (e) { return true; } }
+function renderAppNote() {
+  if (!APP) return;
+  $("appNote").innerHTML = notifAllowed() ? "Ilmoitukset ovat päällä."
+    : `Ilmoitukset ovat estetty, joten vahdit eivät voi ilmoittaa puhelimeen. <button type="button" class="linkbtn" id="askNotif">Salli ilmoitukset</button>`;
+  const ask = $("askNotif"); if (ask) ask.addEventListener("click", () => { try { APP.askNotifications(); } catch (e) {} });
+}
+function askForNotifications(note, msg) {
+  if (notifAllowed()) { note.textContent = msg + " Saat ilmoituksen puhelimeen, kun vahti löytää uuden tarjouksen."; return; }
+  note.textContent = msg + " Salli ilmoitukset, niin vahti voi kertoa osumista puhelimeen.";
+  try { APP.askNotifications(); } catch (e) {}
+}
+// The app calls this after the permission dialog or when you come back from the phone's settings.
+window.appPermissionChanged = () => {
+  renderAppNote();
+  if (notifAllowed() && /Salli ilmoitukset/.test($("watchNote").textContent)) $("watchNote").textContent = "Ilmoitukset sallittu. Vahti ilmoittaa puhelimeen uusista osumista.";
 };
 
 // ---------- fresh data: a page (or the app) left open for over 5 hours reloads itself when it is looked at again

@@ -165,10 +165,7 @@ def main():
     PUBLIC.mkdir(exist_ok=True)
     blob = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     (PUBLIC / "offers.json").write_text(blob, encoding="utf-8")
-    config = load("alerts-config.json") or {"api": "/api/vahti"}
-    if "ALERT_API" in os.environ:  # GitHub Pages has no backend: the workflow passes the alert service URL, or ""
-        config["api"] = os.environ["ALERT_API"].strip()
-    template = (HERE / "template.html").read_text(encoding="utf-8").replace("__CONFIG__", json.dumps(config))
+    template = (HERE / "template.html").read_text(encoding="utf-8")
     (PUBLIC / "index.html").write_text(template.replace("__DATA__", "null"), encoding="utf-8")
     (HERE.parent / "preview.html").write_text(template.replace("__DATA__", blob.replace("</", "<\\/")), encoding="utf-8")
     print(len(rows), "rows ->", len(out_rows), "cards,", len(store_names), "stores,", len(blob) // 1024, "KB")

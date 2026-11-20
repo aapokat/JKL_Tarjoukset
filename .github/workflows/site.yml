@@ -58,8 +58,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Build the page
-        env:
-          ALERT_API: ${{ vars.ALERT_API }}   # e-mail alert service URL; empty = alerts stay in the browser
         run: python site/build.py
       - name: Turn on GitHub Pages if it is still off (otherwise set Settings, Pages, Source to GitHub Actions)
         uses: actions/configure-pages@v5
