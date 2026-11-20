@@ -14,7 +14,7 @@ try {
     Write-Host "$(Get-Date -Format 'dd.MM.yyyy HH:mm') Haetaan repon uusin versio"
     Run @("git", "pull", "--rebase", "--autostash", "origin", "main")
 
-    Write-Host "Kerätään K-kaupat (noin 25 minuuttia, selainikkuna sulkeutuu itse)"
+    Write-Host "Kerätään K-kaupat (noin 30 minuuttia, selainikkuna sulkeutuu itse)"
     Run @("python", "site/collect_browser.py", "--show", "--edge")
 
     Run @("git", "add", "site/data/k-ruoka-snapshot.json")

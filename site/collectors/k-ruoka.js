@@ -9,13 +9,19 @@
   const build = ([...document.scripts].map(s => (s.src.match(/\/assets\/b-(\d+)\//) || [])[1]).find(Boolean)) || "";
   const headers = {"content-type": "application/json", "accept": "application/json", "X-K-Build-Number": build};
   const sleep = ms => new Promise(r => setTimeout(r, ms));
+  // K-Ruoka allows roughly 500 quick requests and then blocks for up to two hours (429 with a long Retry-After).
+  // So: one store at a time, a pause between pages, and if the block comes anyway, the remaining stores are
+  // skipped (they keep their previous offers) instead of waiting it out.
+  let blocked = false;
   async function post(path, body) {
     for (let attempt = 0; attempt < 6; attempt++) {
+      if (blocked) throw new Error("rate limited");
       let r = null;
       try { r = await fetch(path, {method: "POST", headers, body: JSON.stringify(body)}); } catch (e) { /* network hiccup */ }
       if (r && r.ok) return r.json();
       if (r && r.status === 409) throw new Error("K-Ruoka was updated, reload the page and run again");
-      await sleep((r && r.status === 429 ? 30000 : 2000) * (attempt + 1));   // 429 = K-Ruoka asks to slow down
+      if (r && r.status === 429 && Number(r.headers.get("retry-after")) > 300) { blocked = true; throw new Error("rate limited"); }
+      await sleep((r && r.status === 429 ? 30000 : 2000) * (attempt + 1));
     }
     throw new Error("request failed: " + path);
   }
@@ -72,7 +78,7 @@
           if (r) rows.push(r);
         }
         if (!(j.offers || []).length) break;
-        await sleep(400);
+        await sleep(1500);
       }
     }
     counts[store] = seen.size;
@@ -80,7 +86,7 @@
     console.log(store, seen.size);
   }
   const queue = Object.entries(STORES);
-  await Promise.all([0, 1].map(async () => {   // two stores at a time
+  await Promise.all([0].map(async () => {   // one store at a time
     while (queue.length) {
       const [id, store] = queue.shift();
       try { await collectStore(id, store); }

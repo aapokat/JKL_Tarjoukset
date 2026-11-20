@@ -31,7 +31,7 @@ def main(show=False, edge=False):
         page.evaluate("s => { window.K_STORES = s; window.K_NO_DOWNLOAD = true; }", stores)
         page.add_script_tag(content=script)
         started = time.time()
-        while time.time() - started < 45 * 60:
+        while time.time() - started < 75 * 60:
             state = page.evaluate("({done: !!window.K_RESULT, error: window.K_ERROR || '', progress: window.K_PROGRESS || null})")
             if state["error"]:
                 raise SystemExit("K-Ruoka collector failed: " + state["error"])
