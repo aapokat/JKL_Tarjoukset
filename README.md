@@ -31,7 +31,7 @@ Pohjana on Ylivieskan tarjoukset -sivu, mutta tämä versio on tehty Jyväskylä
 
 ## Rakenne
 
-- **GitHub Actions** (`.github/workflows/site.yml`) hakee tarjoukset joka aamu klo 03.17 UTC, committaa datan, rakentaa sivun
+- **GitHub Actions** (`.github/workflows/site.yml`) hakee tarjoukset joka toinen aamu klo 05.20 UTC (talvella 7.20, kesällä 8.20 Suomen aikaa), committaa datan, rakentaa sivun
   (`python3 site/build.py`) ja julkaisee kansion `public/` **GitHub Pagesiin**. Sama workflow julkaisee sivun uudelleen jokaisesta
   pushista mainiin.
 - **Ajastettu funktio** `vahdit-tarkistus` ajetaan joka aamu klo 06.40 UTC (8.40 tai 9.40 Suomen aikaa) ja lähettää sähköpostit.
