@@ -148,7 +148,7 @@ SUBCATS = {
     "Maito ja juusto": [
         ("Kasvipohjaiset", r"kaurajuoma|kauramaito|kaurajog|kauravälipala|kaurapohj|soijajuoma|mantelijuoma|riisijuoma|kookosjuoma|oatly|alpro|kasvipohj|planti|kaura(?!.*juust)"),
         ("Tuorejuustot", r"tuorejuust|mascarpone|philadelphia|raejuust|kotijuust|ricotta|kermajuustolevit|tuorejuustot"),
-        ("Juustot", r"babybel|juust|cheddar|mozzarella|feta|parmesan|parmigiano|emmental|gouda|edam|brie|camembert|halloumi|grana padano|pecorino|gorgonzola"),
+        ("Juustot", r"babybel|juust(?!oportti)|cheddar|mozzarella|feta|parmesan|parmigiano|emmental|gouda|edam|brie|camembert|halloumi|grana padano|pecorino|gorgonzola"),
         ("Rahkat ja vanukkaat", r"proteiinivan|profit|rahka|vanukas|vanukkaat|pudding|välipala|proteiinijuoma|protein"),
         ("Kermat", r"fraiche|kerma|smetana|crème|creme fraiche|ranskankerm|vispikerm"),
         ("Jogurtit ja viilit", r"jogurt|viili|skyr|kreikkalai|kefiiri|ylä|a\+|bio"),
