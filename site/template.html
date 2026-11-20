@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jyväskylän tarjoukset</title>
 <meta name="description" content="Jyväskylän kauppojen myymäläalennukset yhdellä sivulla: vähintään 20 % alennukset, kuvat, suosikit ja hintavahdit.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#F2F3F5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="JKL Tarjoukset">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="preconnect" href="https://api.fontshare.com">
 <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800,900&display=swap">
@@ -413,6 +421,10 @@ button.chip{cursor:pointer}
   <span id="tipsAskText">Saako sovellus muistaa, millaisia tuotteita katsot, ja ilmoittaa samankaltaisista aleista? Tieto pysyy vain tässä puhelimessa. <a href="tietosuoja.html">Lue lisää</a></span>
   <span class="row"><button class="pill small" type="button" id="tipsYes">Salli</button><button class="pill small ghost" type="button" id="tipsNo">Ei kiitos</button></span>
 </div>
+<div class="toast asks" id="iosHint" role="dialog" aria-labelledby="iosHintText" hidden>
+  <span id="iosHintText">Lisää tarjoukset iPhonen aloitusnäyttöön: paina alhaalla <strong>Jaa</strong>-painiketta <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Jaa" style="vertical-align:-3px"><path d="M12 3v12M8 7l4-4 4 4M5 12v8h14v-8"/></svg> ja valitse <strong>Lisää Koti-valikkoon</strong>. Sivu aukeaa silloin omana sovelluksenaan.</span>
+  <span class="row"><button class="pill small" type="button" id="iosHintOk">Selvä</button></span>
+</div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="watchDrawer" aria-labelledby="watchTitle" aria-modal="true" role="dialog">
   <header><h2 id="watchTitle">Hintavahdit</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
@@ -591,7 +603,7 @@ function boot(data) {
   const dates = Object.values(data.sources || {}).filter(Boolean).sort();
   $("heroSub").textContent = "Vähintään " + (data.minPct || 20) + " % alennukset " + STORES.length + " kaupasta." + (dates.length ? " Päivitetty " + when(dates[dates.length - 1]) + "." : "");
   fromHash();
-  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits(); askTips();
+  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits(); askTips(); iosHint();
 }
 // Links from phone notifications: #hits = alert hits, #fav = saved offers, #tips = offers like the ones you look at.
 function fromHash() {
@@ -1211,6 +1223,15 @@ function answerTips(yes) {
 }
 $("tipsYes").addEventListener("click", () => answerTips(true));
 $("tipsNo").addEventListener("click", () => answerTips(false));
+
+// ---------- iPhone and iPad: how to add the page to the home screen (shown once, only in the browser)
+function iosHint() {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const installed = navigator.standalone || matchMedia("(display-mode: standalone)").matches;
+  if (!ios || installed || APP || store.get("iosHintSeen", false) || !$("hitToast").hidden) return;
+  setTimeout(() => { $("iosHint").hidden = false; }, 4000);
+}
+$("iosHintOk").addEventListener("click", () => { $("iosHint").hidden = true; store.set("iosHintSeen", true); });
 
 // ---------- fresh data: a page (or the app) left open for over 5 hours reloads itself when it is looked at again
 const LOADED_AT = Date.now(), STALE_MS = 5 * 3600e3;
