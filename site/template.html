@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jyväskylän tarjoukset</title>
-<meta name="description" content="Jyväskylän kauppojen myymäläalennukset yhdellä sivulla: vähintään 20 % alennukset, kuvat, suosikit ja hintavahdit sähköpostiin.">
+<meta name="description" content="Jyväskylän kauppojen myymäläalennukset yhdellä sivulla: vähintään 20 % alennukset, kuvat, suosikit ja hintavahdit.">
 <link rel="preconnect" href="https://api.fontshare.com">
 <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800,900&display=swap">
@@ -55,6 +55,10 @@ button{font:inherit;color:inherit}
   font-size:clamp(68px,16vw,220px);line-height:1;letter-spacing:-.045em;pointer-events:none;text-shadow:0 2px 30px rgba(0,0,0,.18)}
 .searchcard{position:absolute;z-index:3;left:68px;right:68px;bottom:0;background:var(--page);border-radius:var(--r-md) var(--r-md) 0 0;
   padding:18px 22px 6px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.herolinks{display:flex;justify-content:flex-end;gap:16px;padding:8px 70px 0}
+.minilink{display:inline-flex;align-items:center;gap:6px;border:0;background:none;padding:4px 2px;font:inherit;font-size:13px;color:var(--muted);cursor:pointer;text-decoration:none}
+.minilink:hover{color:var(--ink);text-decoration:underline}
+.minilink svg{width:15px;height:15px}
 .searchcard h2{margin:0;font-family:var(--display);font-size:23px;font-weight:800;letter-spacing:-.01em}
 .searchcard p{margin:2px 0 0;color:var(--muted);font-size:13px}
 .search{margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 5px 5px 16px;min-width:min(420px,100%)}
@@ -200,6 +204,7 @@ button.chip{cursor:pointer}
 .form{display:grid;gap:12px}
 .form label{display:grid;gap:5px;font-size:13px;color:var(--muted)}
 .form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form textarea{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;resize:vertical;min-height:120px}
 .form input,.form select{font:inherit;font-size:16px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;width:100%;min-width:0}
 .form .pill{justify-self:start}
 .formnote{font-size:13px;color:var(--ink);min-height:1.2em;margin:2px 0 0}
@@ -231,6 +236,10 @@ button.chip{cursor:pointer}
   width:max-content;max-width:calc(100% - 32px);font-size:14px}
 .toast[hidden]{display:none}
 .toast .pill{background:#fff;color:var(--ink)}
+.toast.asks{flex-direction:column;align-items:stretch;gap:10px;padding:16px;width:min(420px,calc(100% - 32px))}
+.toast.asks a{color:#fff}
+.toast.asks .row{display:flex;gap:8px;justify-content:flex-end}
+.toast .pill.ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 .toastx{border:0;background:none;color:#fff;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;opacity:.75}
 .newhit{position:absolute;bottom:12px;right:12px;background:var(--pill);color:#fff;border-radius:7px;font-size:12px;font-weight:700;padding:3px 8px}
 .side-drawer .catlist li.open>button{position:sticky;top:0;z-index:1}
@@ -261,6 +270,7 @@ button.chip{cursor:pointer}
   .hero-panel{height:470px;--card-h:150px}
   .bigword{font-size:19vw}
   .searchcard{left:10px;right:10px;padding:14px 14px 6px}
+  .herolinks{padding:8px 14px 0;justify-content:space-between}
   .searchcard h2{font-size:18px}
   .search{min-width:100%}
   .grid{gap:24px 12px}
@@ -320,6 +330,10 @@ button.chip{cursor:pointer}
       </label>
     </div>
   </div>
+  <div class="herolinks">
+    <button class="minilink" type="button" data-open="feedback"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>Anna palautetta</button>
+    <a class="minilink" href="tietosuoja.html">Tietosuoja</a>
+  </div>
 </header>
 
 <main class="wrap">
@@ -366,6 +380,8 @@ button.chip{cursor:pointer}
         <li><button class="link" type="button" data-view="all">Kaikki tarjoukset</button></li>
         <li><button class="link" type="button" data-view="fav">Suosikit</button></li>
         <li><button class="link" type="button" data-open="watch">Hintavahdit</button></li>
+        <li><button class="link" type="button" data-open="feedback">Anna palautetta</button></li>
+        <li><a class="link" href="tietosuoja.html">Tietosuoja ja evästeet</a></li>
       </ul>
     </div>
     <div>
@@ -375,7 +391,7 @@ button.chip{cursor:pointer}
     <div class="src">
       <h4>Mistä tiedot tulevat</h4>
       <div id="sources"></div>
-      <p>Hinnat kopioidaan kauppojen omilta sivuilta. Tarkista hinta aina kaupassa. Suosikit säilyvät tämän selainistunnon ajan, hintavahdit tässä selaimessa. Android-sovelluksessa suosikit säilyvät pysyvästi ja vahdit ilmoittavat puhelimeen: <a href="https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk">lataa sovellus (APK)</a>.</p>
+      <p>Hinnat kopioidaan kauppojen omilta sivuilta. Tarkista hinta aina kaupassa. Sivu ei käytä evästeitä eikä seurantaa. Suosikit säilyvät tämän selainistunnon ajan, hintavahdit tässä selaimessa. Android-sovelluksessa suosikit säilyvät pysyvästi ja vahdit ilmoittavat puhelimeen: <a href="https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk">lataa sovellus (APK)</a>.</p>
     </div>
   </footer>
 </main>
@@ -385,6 +401,10 @@ button.chip{cursor:pointer}
   <span id="hitText"></span>
   <button class="pill small" type="button" id="hitShow">Näytä</button>
   <button class="toastx" type="button" id="hitClose" aria-label="Sulje ilmoitus">×</button>
+</div>
+<div class="toast asks" id="tipsAsk" role="dialog" aria-labelledby="tipsAskText" hidden>
+  <span id="tipsAskText">Saako sovellus muistaa, millaisia tuotteita katsot, ja ilmoittaa samankaltaisista aleista? Tieto pysyy vain tässä puhelimessa. <a href="tietosuoja.html">Lue lisää</a></span>
+  <span class="row"><button class="pill small" type="button" id="tipsYes">Salli</button><button class="pill small ghost" type="button" id="tipsNo">Ei kiitos</button></span>
 </div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="watchDrawer" aria-labelledby="watchTitle" aria-modal="true" role="dialog">
@@ -416,6 +436,21 @@ button.chip{cursor:pointer}
     </section>
     <p class="formnote" id="apkLink">Ilmoitukset puhelimeen saat Android-sovelluksella: <a href="https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk">lataa sovellus (APK)</a>.</p>
     <p class="formnote" id="watchOnlyRow" hidden><button type="button" class="linkbtn" id="watchOnly">Näytä vain vahtien osumat</button></p>
+  </div>
+</aside>
+<aside class="drawer" id="feedbackDrawer" aria-labelledby="feedbackTitle" aria-modal="true" role="dialog">
+  <header><h2 id="feedbackTitle">Palaute</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="content">
+    <p class="lead">Huomasitko virheen, puuttuuko kauppa tai onko idea? Lähetä viesti, luen kaikki.</p>
+    <form id="feedbackForm" class="form">
+      <label>Aihe<select name="topic">
+        <option>Palaute tai idea</option><option>Väärä hinta tai tarjous</option><option>Kauppa puuttuu</option><option>Sovellus ei toimi</option><option>Muu asia</option>
+      </select></label>
+      <label>Viesti<textarea name="msg" rows="6" maxlength="1500" required placeholder="Kirjoita viestisi tähän"></textarea></label>
+      <label>Nimi (valinnainen)<input name="name" maxlength="60" autocomplete="name"></label>
+      <button type="submit" class="pill">Avaa sähköpostissa</button>
+      <p class="formnote" id="feedbackNote" role="status">Nappi avaa sähköpostiohjelmasi valmiilla viestillä osoitteeseen aapo@aaje.fi. Viesti lähtee vasta, kun painat siellä Lähetä.</p>
+    </form>
   </div>
 </aside>
 <aside class="drawer side-drawer" id="filterDrawer" aria-labelledby="filterTitle" aria-modal="true" role="dialog">
@@ -527,7 +562,7 @@ function boot(data) {
   const dates = Object.values(data.sources || {}).filter(Boolean).sort();
   $("heroSub").textContent = "Vähintään " + (data.minPct || 20) + " % alennukset " + STORES.length + " kaupasta." + (dates.length ? " Päivitetty " + when(dates[dates.length - 1]) + "." : "");
   fromHash();
-  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits();
+  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits(); askTips();
 }
 // Links from phone notifications: #hits = alert hits, #fav = saved offers, #tips = offers like the ones you look at.
 function fromHash() {
@@ -793,7 +828,7 @@ document.addEventListener("click", e => {
   const v = e.target.closest("[data-view]");
   if (v) { state.view = v.dataset.view; state.page = 1; render(); document.querySelector(".shop").scrollIntoView({behavior: "smooth", block: "start"}); return; }
   const o = e.target.closest("[data-open]");
-  if (o) { openDrawer(o.dataset.open === "watch" ? "watchDrawer" : "filterDrawer"); return; }
+  if (o) { openDrawer({watch: "watchDrawer", feedback: "feedbackDrawer"}[o.dataset.open] || "filterDrawer"); return; }
   if (e.target.closest("[data-close]") || e.target === $("scrim")) closeDrawers();
   if (e.target.closest("[data-focus-search]")) { $("q").focus(); $("q").scrollIntoView({block: "center"}); }
 });
@@ -931,7 +966,7 @@ function renderSources() {
 const HALF_LIFE = 30 * 864e5;   // a month-old look counts half
 let interest = store.get("interest", {});
 function bump(o, w) {
-  if (!APP || !o || !o.cat || o.cat === "Muut") return;
+  if (!APP || !store.get("tips", false) || !o || !o.cat || o.cat === "Muut") return;
   const now = Date.now();
   const add = k => { const [s0, t] = interest[k] || [0, now]; interest[k] = [s0 * Math.pow(0.5, (now - t) / HALF_LIFE) + w, now]; };
   add(o.sub ? "s|" + o.cat + "|" + o.sub : "c|" + o.cat);
@@ -954,7 +989,7 @@ function syncApp() {
   if (!APP) return;
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
-    const tips = store.get("tips", true);
+    const tips = store.get("tips", false);
     const favList = [...favs].map(id => { const o = offers.find(x => x.id === id) || favData[id]; return o ? {id, name: o.name, valid: o.valid || ""} : null; }).filter(Boolean);
     try {
       APP.sync(JSON.stringify({watches, tips, interests: tips ? topInterests().map(({k, ...x}) => x) : [],
@@ -975,8 +1010,8 @@ function initApp() {
   $("appPanel").hidden = false;
   $("watchLead").textContent = "Vahdit tallentuvat puhelimeen. Sovellus tarkistaa tarjoukset muutaman tunnin välein ja ilmoittaa uusista osumista.";
   renderAppNote();
-  $("tipsToggle").checked = store.get("tips", true);
-  $("tipsToggle").addEventListener("change", e => { store.set("tips", e.target.checked); syncApp(); });
+  $("tipsToggle").checked = store.get("tips", false);
+  $("tipsToggle").addEventListener("change", e => { answerTips(e.target.checked); });
   $("testNotif").addEventListener("click", () => { try { APP.testNotification(); } catch (e) {} });
   $("tipsView").addEventListener("click", () => { state.view = "tips"; state.watchOnly = false; state.page = 1; closeDrawers(); render(); document.querySelector(".shop").scrollIntoView(); });
   $("clearInterest").addEventListener("click", () => { interest = {}; store.set("interest", interest); renderInterests(); syncApp(); });
@@ -1012,7 +1047,7 @@ function checkNewHits() {
   $("hitToast").hidden = false;
   render(); renderRail();
 }
-function closeHitToast() { $("hitToast").hidden = true; store.set("seenHits", hitIds()); }
+function closeHitToast() { $("hitToast").hidden = true; store.set("seenHits", hitIds()); askTips(); }
 $("hitShow").addEventListener("click", () => {
   closeHitToast(); state.view = "all"; state.watchOnly = true; state.page = 1; render();
   document.querySelector(".shop").scrollIntoView({behavior: "smooth", block: "start"});
@@ -1037,6 +1072,33 @@ window.appPermissionChanged = () => {
   renderAppNote();
   if (notifAllowed() && /Salli ilmoitukset/.test($("watchNote").textContent)) $("watchNote").textContent = "Ilmoitukset sallittu. Vahti ilmoittaa puhelimeen uusista osumista.";
 };
+
+// ---------- feedback: opens the visitor's own e-mail program with the message filled in (nothing is sent from here)
+const FEEDBACK_TO = "aapo@aaje.fi";
+$("feedbackForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const f = e.target, msg = f.msg.value.trim();
+  if (msg.length < 3) { $("feedbackNote").textContent = "Kirjoita ensin viesti."; return; }
+  const where = APP ? "Android-sovellus " + (() => { try { return APP.version(); } catch (err) { return ""; } })() : "verkkosivu";
+  const body = msg.slice(0, 1500) + "\n\n" + (f.name.value.trim() ? "Terveisin " + f.name.value.trim() + "\n" : "") + "(Lähetetty: Jyväskylän tarjoukset, " + where + ")";
+  location.href = "mailto:" + FEEDBACK_TO + "?subject=" + encodeURIComponent("JKL Tarjoukset: " + f.topic.value) + "&body=" + encodeURIComponent(body);
+  $("feedbackNote").innerHTML = `Sähköpostiohjelmasi pitäisi avautua. Jos ei auennut, lähetä viesti osoitteeseen <a href="mailto:${FEEDBACK_TO}">${FEEDBACK_TO}</a>.`;
+});
+
+// ---------- app: ask once whether it may learn what you look at (needed for "offers like the ones you look at")
+function askTips() {
+  if (!APP || store.get("tipsAsked", false)) return;
+  if (!$("hitToast").hidden) return;   // one message at a time: asked after the "new hits" note is closed
+  $("tipsAsk").hidden = false;
+}
+function answerTips(yes) {
+  store.set("tipsAsked", true); store.set("tips", yes);
+  $("tipsAsk").hidden = true; $("tipsToggle").checked = yes;
+  if (!yes) { interest = {}; store.set("interest", interest); }
+  renderInterests(); syncApp();
+}
+$("tipsYes").addEventListener("click", () => answerTips(true));
+$("tipsNo").addEventListener("click", () => answerTips(false));
 
 // ---------- fresh data: a page (or the app) left open for over 5 hours reloads itself when it is looked at again
 const LOADED_AT = Date.now(), STALE_MS = 5 * 3600e3;

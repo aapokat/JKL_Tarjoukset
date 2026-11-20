@@ -167,6 +167,7 @@ def main():
     (PUBLIC / "offers.json").write_text(blob, encoding="utf-8")
     template = (HERE / "template.html").read_text(encoding="utf-8")
     (PUBLIC / "index.html").write_text(template.replace("__DATA__", "null"), encoding="utf-8")
+    (PUBLIC / "tietosuoja.html").write_text((HERE / "tietosuoja.html").read_text(encoding="utf-8"), encoding="utf-8")
     (HERE.parent / "preview.html").write_text(template.replace("__DATA__", blob.replace("</", "<\\/")), encoding="utf-8")
     print(len(rows), "rows ->", len(out_rows), "cards,", len(store_names), "stores,", len(blob) // 1024, "KB")
 
