@@ -197,6 +197,8 @@ button.chip{cursor:pointer}
 .foot .src{color:var(--muted);font-size:13px}
 .foot .src h4{color:var(--ink)}
 .price small{font-family:var(--font);font-size:12px;font-weight:500;color:var(--muted);margin-left:2px}
+.price small.qty{margin:0 5px 0 0;font-size:13px;font-weight:700;color:var(--ink);background:var(--surface);border-radius:6px;padding:1px 6px;box-shadow:inset 0 0 0 1px var(--line);vertical-align:3px}
+.each{font-size:12.5px;color:var(--muted);text-align:right;margin-top:-2px}
 .foot .src p{margin:0 0 8px;max-width:60ch}
 
 /* ---------- drawers (alerts, filters on mobile) */
@@ -292,6 +294,7 @@ button.chip{cursor:pointer}
   .name{font-size:14px}
   .price{font-size:15px}
   .row1{flex-direction:column;gap:2px}
+  .each{text-align:left}
   .actions{grid-template-columns:1fr}
   .actions .pill.ghost{display:none}
   .track{grid-auto-columns:72%}
@@ -718,6 +721,11 @@ for (const id of ["side", "sideMobile"]) { $(id).addEventListener("click", onSid
 function refresh() { renderSide(); render(); }
 
 // ---------- cards
+// Some K-Ruoka campaign offers have no product page of their own: open the product search with the name instead.
+function searchUrl(o) {
+  if ((o.names[0] || "").startsWith("K-")) return "https://www.k-ruoka.fi/kauppa/tuotehaku?haku=" + encodeURIComponent(o.name.replace(/\s+\d.*$/, "") || o.name);
+  return "";
+}
 function chainOf(name) { const s = STORES.find(x => x.name === name); return s ? s.chain : name; }
 function card(o, opts) {
   const shown = o.names.filter(n => state.on.has(n));
@@ -726,14 +734,23 @@ function card(o, opts) {
   const chip = list.length === 1 ? `<span class="chip" title="${esc(list[0])}">${esc(list[0])}</span>`
     : `<button type="button" class="chip" data-stores="${o.i}" title="${esc(list.join(", "))}">${list.length} kauppaa</button>`;
   const shortUnit = /^[a-zäö]{1,4}$/i.test(o.unit || "");
-  const price = o.price ? fmt(o.price) + " €" + (shortUnit ? `<small>/${esc(o.unit)}</small>` : "") : "−" + o.pct + " %";
+  // Multi-buy offers ("3 kpl = 5,00 €"): the price is for the whole lot, so the amount goes in front of it
+  // and the price of one is shown under it.
+  const bundle = o.price && /(\d+) kpl = /.exec(o.note || "");
+  const qty = bundle ? +bundle[1] : 0;
+  const price = !o.price ? "−" + o.pct + " %"
+    : qty > 1 ? `<small class="qty">${qty} kpl</small>${fmt(o.price)} €`
+    : fmt(o.price) + " €" + (shortUnit ? `<small>/${esc(o.unit)}</small>` : "");
+  const each = qty > 1 ? `${fmt(Math.round(o.price / qty * 100) / 100)} €/kpl` : "";
+  const note = qty > 1 ? (o.note || "").replace(/,?\s*\d+ kpl = [\d,]+ €/, "").replace(/^,\s*/, "") : o.note;
   const local = list.length === 1 && !(STORES.find(s => s.name === list[0]) || {}).info;   // one K or S store, not a national chain
   const where = list.length === 1 ? list[0] : list.length === 2 ? list.join(" ja ") : `${list[0]} ja ${list.length - 1} muuta`;
   const meta = o.brand || "";
   const ends = endLabel(o, state.view === "fav" || favs.has(o.id));
   const left = daysLeft(o.valid);
-  const notes = [o.note, shortUnit ? "" : o.unit, ends ? "" : o.valid, local && !/Vain tässä kaupassa/.test(o.note) ? "Hinta vain tässä kaupassa" : ""].filter(Boolean).join(". ");
-  const link = o.url ? `href="${esc(o.url)}" target="_blank" rel="noopener"` : "";
+  const notes = [note, shortUnit ? "" : o.unit, ends ? "" : o.valid, local && !/Vain tässä kaupassa/.test(o.note) ? "Hinta vain tässä kaupassa" : ""].filter(Boolean).join(". ");
+  const url = o.url || searchUrl(o);
+  const link = url ? `href="${esc(url)}" target="_blank" rel="noopener"` : "";
   const fav = favs.has(o.id);
   return `<article class="card${!o.ended && isHit(o) ? " hit" : ""}${o.ended ? " gone" : ""}" data-i="${o.i}">
     <div class="media">
@@ -745,12 +762,13 @@ function card(o, opts) {
     </div>
     <div class="body">
       <div class="row1"><h3 class="name">${o.url ? `<a ${link}>${esc(o.name)}</a>` : esc(o.name)}</h3><span class="price">${price}</span></div>
+      ${each ? `<div class="each">${each}</div>` : ""}
       <div class="row2"><span class="where">${esc(meta)}</span>${o.was ? `<s>${fmt(o.was)} €</s>` : ""}</div>
       <div class="storeline${list.length === 1 ? " one" : ""}" title="${esc(list.join(", "))}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg><span>${esc(where)}</span></div>
       ${ends ? `<div class="ends${o.ended || (left != null && left < 0) ? " over" : left != null && left <= 1 ? " soon" : ""}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${esc(ends)}</div>` : ""}
       ${notes ? `<div class="note">${esc(notes)}</div>` : ""}
       ${o.best === 0 ? `<div class="cheaper">Muualla ${fmt(o.bestPrice)} €${/kpl =/.test(o.note) ? " kappaleelta" : ""}</div>` : ""}
-      ${opts && opts.compact ? "" : `<div class="actions"><button type="button" class="pill ghost small" data-watch="${o.i}">Vahdi</button>${o.url ? `<a class="pill small" ${link}>Kaupan sivulle</a>` : `<button type="button" class="pill small" data-fav="${o.i}">${fav ? "Suosikeissa" : "Suosikiksi"}</button>`}</div>`}
+      ${opts && opts.compact ? "" : `<div class="actions"><button type="button" class="pill ghost small" data-watch="${o.i}">Vahdi</button>${url ? `<a class="pill small" ${link}>Kaupan sivulle</a>` : `<button type="button" class="pill small" data-fav="${o.i}">${fav ? "Suosikeissa" : "Suosikiksi"}</button>`}</div>`}
     </div>
   </article>`;
 }

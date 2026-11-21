@@ -49,7 +49,7 @@ Jos jokin muu kauppa ei vastaa, sen edellisen haun tarjoukset pidetään, eikä 
 
 1. Repon **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 2. **Settings → Actions → General → Workflow permissions: Read and write**, jotta päivittäinen haku voi committaa datan.
-3. **Actions → Päivitä ja julkaise → Run workflow**. Sivu tulee osoitteeseen `https://aapokat.github.io/JKL_Tarjoukset/`.
+3. **Actions → Päivitä ja julkaise → Run workflow**. Sivu tulee osoitteeseen `https://alet.aaje.fi/`.
 
 GitHub Pages on ilmainen eikä rajoita julkaisujen määrää. Netlifyn ilmaistaso ei sovi tähän: jokainen julkaisu maksaa
 15 krediittiä 300:sta kuukaudessa, ja tarjoukset julkaistaan joka päivä.
