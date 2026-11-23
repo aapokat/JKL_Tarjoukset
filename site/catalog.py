@@ -77,6 +77,9 @@ FIRST_RULES = [
     (r"levite|oivariini|voi\b", "Maito ja juusto"),
     (r"kosmetiikkalaukku|vartalovoi|co-test|kylpymaito|vartalomaito|puhdistusmaito|kylpyvaahto|kylpysuola", "Kauneus ja terveys"),
     (r"semper|piltti|muru baby|\d+ ?kk\b", "Lapset ja lelut"),
+    (r"pehmolelu|pehmo |leikkisetti", "Lapset ja lelut"),
+    (r"wc-paperi|wc paperi|talouspaperi|vessapaperi|toalettipaperi|nenäliina|paperipyyhe|käsipyyhepaperi", "Koti, keittiö ja siivous"),
+    (r"maitohappobakt|probiootti|kapselit|\d+ kaps\b", "Kauneus ja terveys"),
     (r"rukkaset|lapaset|sormikkaat|hanskat", "Vaatteet ja kengät"),
     (r"kahvinkeitin|kahvimylly|kahvikone|espressokone|vedenkeitin", "Elektroniikka ja kodinkoneet"),
     (r"kahvikuppi|kahvimuki|teekannu|teemuki|kahvikannu|kahvisuoda|kahvipurkki|teekuppi|termosmuki", "Koti, keittiö ja siivous"),
@@ -116,7 +119,7 @@ def by_rules(text, rules):
 FOOD_GROUPS = {"Hedelmät ja vihannekset", "Liha ja kala", "Maito ja juusto", "Leivät ja leivonnaiset", "Valmisruoat ja pakasteet",
                "Kuivat, mausteet ja kastikkeet", "Makeiset ja naposteltavat", "Juomat ja kahvi", "Ruoka, muut"}
 # Tokmanni's own non-food ranges: "Penaali Miny hedelmät" is a pencil case, not fruit.
-NOT_FOOD = re.compile(r"\bminy\b|kotikulta|penaali|mukeja|\bmuki\b|lautanen|tyynynpäällinen|tarra|koriste")
+NOT_FOOD = re.compile(r"\bminy\b|kotikulta|penaali|mukeja|\bmuki\b|lautanen|tyynynpäällinen|tarra|koriste|paituli|pyjama|naisten |miesten |lasten |t-paita|neule|sukat\b")
 
 
 def categorize(raw_cat, name):
@@ -233,8 +236,8 @@ SUBCATS = {
         ("Joulu ja koristeet", r"joulu|tonttu|kuusenkoriste|adventti|kuusiköynn|koriste|valosarja|valoverho|jouluvalo|tähti|kranssi|joulukuus|enkel|nisse|lumihiutale|kimalle|kuusi"),
         ("Kynttilät ja tuoksut", r"kynttilä|tuikku|huonetuoks|tuoksutikk|tuoksukynt|lyhty|bolsius|tuoksuöljy|aromi"),
         ("Valaisimet", r"valaisin|plafondi|kattolamppu|pöytälamppu|lattialamppu|riippuvalaisin|kohdevalo|kattovalo"),
-        ("Siivous ja pyykki", r"pesuaine|pesujauhe|pyykki|huuhteluaine|astianpesu|tiski|konetiski|yleispuhd|\bwc\b|wc-|siivous|moppi|harja|sieni|siivousliina|mikrokuitu|omo\b|ariel|fairy|finish|ajax|cif\b|domestos|vanish|comfort|desinfi|tahranpoist|ilmanraikast|perlana|pyykkiteline|pyykkikori|lasinpesu|kalkinpoist|imuripussi|rätti"),
         ("Paperit ja kertakäyttö", r"talouspaperi|wc-paperi|vessapaperi|paperipyyh|lambi|serla|lotus|nenäliina|kertakäyttö|folio|kelmu|leivinpaperi|pakastepussi|roskapussi|jätesäkki|biojätepussi|tulitik|sytytin|servetti|minigrip"),
+        ("Siivous ja pyykki", r"pesuaine|pesujauhe|pyykki|huuhteluaine|astianpesu|tiski|konetiski|yleispuhd|\bwc\b|wc-|siivous|moppi|harja|sieni|siivousliina|mikrokuitu|omo\b|ariel|fairy|finish|ajax|cif\b|domestos|vanish|comfort|desinfi|tahranpoist|ilmanraikast|perlana|pyykkiteline|pyykkikori|lasinpesu|kalkinpoist|imuripussi|rätti"),
         ("Tekstiilit", r"pyyhe|pyyhkeet|lakana|pussilakana|tyyny|peitto|peite|matto|verho|viltti|torkkupeit|patja|päiväpeit|kylpytakki|tyynyliina|ovimatto|tyynynpäällinen|sängyn"),
         ("Keittiö ja kattaus", r"kattila|pannu|veitsi|veitset|haarukka|lusikka|aterin|kulho|vuoka|lautanen|lasi\b|lasit|juomalasi|muki|kuppi|tarjotin|pöytäliina|leikkuulauta|termari|rasia|säilytysrasia|purkki|astia|kattaus|keittiö|paistinpann|wok|kauha|lasta|raastin|siivilä|uunipelti|kakkuvuoka|mittasarja|juomapullo|termospullo|kannu"),
         ("Sisustus ja säilytys", r"taulu|kehys|peili|maljakko|sisustus|säilytys|kori|laatikko|hylly|valaisin|kello|tuoli|pöytä|naulakko|henkari|koukku|teline|kaappi|jakkara|rahi|patsas|figuuri|tekokukka|tekokasvi"),

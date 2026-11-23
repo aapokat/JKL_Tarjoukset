@@ -211,6 +211,37 @@ button.chip{cursor:pointer}
 .drawer header h2{margin:0;font-family:var(--display);font-size:26px;font-weight:800;letter-spacing:-.01em}
 .drawer .content{overflow:auto;padding:8px 22px 30px}
 .drawer .content{flex:1;min-height:0}
+.tabs{display:flex;gap:6px;padding:4px 22px 10px}
+.tabs button{border:0;background:var(--surface);border-radius:999px;padding:8px 16px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;box-shadow:inset 0 0 0 1px var(--line)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:#fff;box-shadow:none}
+.addrow{display:flex;gap:8px}
+.addrow input{flex:1;min-width:0;font:inherit;font-size:16px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:10px 16px}
+.shoplist{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+.shopitem{background:var(--surface);border-radius:16px;padding:10px 12px}
+.shopitem .head{display:flex;align-items:center;gap:8px}
+.shopitem .head strong{font-size:15px;text-transform:capitalize}
+.shopitem .head .found{font-size:12.5px;color:var(--muted)}
+.shopitem .head button{margin-left:auto;border:0;background:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px}
+.hitrow{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.hitrow:first-of-type{margin-top:6px}
+.hitrow img,.hitrow .noimg{width:44px;height:44px;border-radius:10px;object-fit:contain;background:#fff}
+.hitrow .t{font-size:13.5px;line-height:1.3;min-width:0}
+.hitrow .t small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hitrow .p{text-align:right;font-weight:800;font-family:var(--display);font-size:15px;white-space:nowrap}
+.hitrow .p small{display:block;font-family:var(--font);font-weight:700;color:var(--sale);font-size:12px}
+.hitrow .add{grid-column:3;justify-self:end;border:0;border-radius:999px;background:var(--ink);color:#fff;font:inherit;font-size:12.5px;font-weight:700;padding:5px 12px;cursor:pointer}
+.hitrow .add[aria-pressed="true"]{background:#1E8E4E}
+.none{font-size:13px;color:var(--muted);margin:6px 0 2px}
+.cartgroup{margin:4px 0 18px}
+.cartgroup h3{display:flex;justify-content:space-between;font-size:15px;margin:0 0 6px}
+.cartgroup h3 span{color:var(--muted);font-weight:600}
+.cartline{display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:12px;padding:9px 12px;margin-bottom:6px;font-size:14px;cursor:pointer}
+.cartline input{width:20px;height:20px;accent-color:#1E8E4E;flex:none}
+.cartline .t{flex:1;min-width:0}
+.cartline .t small{display:block;color:var(--muted);font-size:12px}
+.cartline.done .t{text-decoration:line-through;color:var(--muted)}
+.cartline .rm{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer}
+.carttotal{display:flex;justify-content:space-between;font-weight:800;font-size:16px;margin:8px 0 4px;padding-top:10px;border-top:1px solid var(--line)}
 .drawerfoot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 22px calc(14px + env(safe-area-inset-bottom));
   border-top:1px solid var(--line);background:var(--page)}
 .drawerfoot .pill{flex:1;max-width:260px;padding:13px 20px;font-size:15px}
@@ -255,6 +286,7 @@ button.chip{cursor:pointer}
 .toast .pill{background:#fff;color:var(--ink)}
 .toast.asks{flex-direction:column;align-items:stretch;gap:10px;padding:16px;width:min(420px,calc(100% - 32px))}
 .toast.asks a{color:#fff}
+.toast.asks a.pill{color:var(--ink);text-decoration:none}
 .toast.asks .row{display:flex;gap:8px;justify-content:flex-end}
 .toast .pill.ghost{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
 .toastx{border:0;background:none;color:#fff;font-size:22px;line-height:1;padding:4px 6px;cursor:pointer;opacity:.75}
@@ -315,6 +347,7 @@ button.chip{cursor:pointer}
       <button type="button" data-view="all" aria-current="true">Tarjoukset</button>
       <button type="button" data-view="fav">Suosikit</button>
       <button type="button" data-open="watch">Hintavahdit</button>
+      <button type="button" data-open="list">Kauppalista</button>
     </div>
     <div class="icons">
       <button class="iconbtn" type="button" data-focus-search aria-label="Hae tuotetta">
@@ -323,6 +356,10 @@ button.chip{cursor:pointer}
       <button class="iconbtn" type="button" data-open="watch" aria-label="Hintavahdit">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>
         <span class="badge" id="watchBadge" hidden></span>
+      </button>
+      <button class="iconbtn" type="button" data-open="list" aria-label="Kauppalista">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6h11M9 12h11M9 18h11"/><path d="m3.5 6 1 1 2-2M3.5 12l1 1 2-2M3.5 18l1 1 2-2"/></svg>
+        <span class="badge" id="listBadge" hidden></span>
       </button>
       <button class="iconbtn" type="button" data-view="fav" aria-label="Suosikit">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20s-7.5-4.6-9.3-9.2C1.4 7.4 3.6 4 7 4c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.4 0 5.6 3.4 4.3 6.8C19.5 15.4 12 20 12 20z"/></svg>
@@ -463,6 +500,28 @@ button.chip{cursor:pointer}
     <p class="formnote" id="apkLink">Ilmoitukset puhelimeen saat Android-sovelluksella: <a href="https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk">lataa sovellus (APK)</a>.</p>
     <p class="formnote" id="watchOnlyRow" hidden><button type="button" class="linkbtn" id="watchOnly">Näytä vain vahtien osumat</button></p>
   </div>
+</aside>
+<aside class="drawer" id="listDrawer" aria-labelledby="listTitle" aria-modal="true" role="dialog">
+  <header><h2 id="listTitle">Kauppalista</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tabList" aria-selected="true" data-tab="list">Lista</button>
+    <button type="button" role="tab" id="tabCart" aria-selected="false" data-tab="cart">Ostoskori <span id="cartCount"></span></button>
+  </div>
+  <div class="content" id="listPane">
+    <form id="listForm" class="addrow" autocomplete="off">
+      <input name="item" maxlength="200" placeholder="esim. maito, juusto, vessapaperi" aria-label="Lisää tuote listaan">
+      <button class="pill small" type="submit">Lisää</button>
+    </form>
+    <p class="formnote">Voit lisätä monta kerralla pilkulla erotettuna. Tarjoukset haetaan valituista kaupoista (<span id="listStores"></span>, muuta Rajaa-valikosta).</p>
+    <ul class="shoplist" id="shopList"></ul>
+  </div>
+  <div class="content" id="cartPane" hidden>
+    <div id="cartBody"></div>
+  </div>
+  <footer class="drawerfoot" id="listFoot">
+    <button class="linkbtn" type="button" id="listClear">Tyhjennä lista</button>
+    <button class="pill" type="button" id="listToCart">Näytä ostoskori</button>
+  </footer>
 </aside>
 <aside class="drawer" id="feedbackDrawer" aria-labelledby="feedbackTitle" aria-modal="true" role="dialog">
   <header><h2 id="feedbackTitle">Palaute</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
@@ -610,7 +669,7 @@ function boot(data) {
   const dates = Object.values(data.sources || {}).filter(Boolean).sort();
   $("heroSub").textContent = "Vähintään " + (data.minPct || 20) + " % alennukset " + STORES.length + " kaupasta." + (dates.length ? " Päivitetty " + when(dates[dates.length - 1]) + "." : "");
   fromHash();
-  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits(); askTips(); iosHint(); checkAppUpdate();
+  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits(); askTips(); iosHint(); checkAppUpdate(); renderListBadge();
 }
 // Links from phone notifications: #hits = alert hits, #fav = saved offers, #tips = offers like the ones you look at.
 function fromHash() {
@@ -904,7 +963,7 @@ document.addEventListener("click", e => {
   const v = e.target.closest("[data-view]");
   if (v) { state.view = v.dataset.view; state.page = 1; render(); document.querySelector(".shop").scrollIntoView({behavior: "smooth", block: "start"}); return; }
   const o = e.target.closest("[data-open]");
-  if (o) { openDrawer({watch: "watchDrawer", feedback: "feedbackDrawer"}[o.dataset.open] || "filterDrawer"); return; }
+  if (o) { openDrawer({watch: "watchDrawer", feedback: "feedbackDrawer", list: "listDrawer"}[o.dataset.open] || "filterDrawer"); if (o.dataset.open === "list") renderShop(); return; }
   if (e.target.closest("[data-close]") || e.target === $("scrim")) closeDrawers();
   if (e.target.closest("[data-focus-search]")) { $("q").focus(); $("q").scrollIntoView({block: "center"}); }
 });
@@ -1207,6 +1266,139 @@ function byRelevance(list) {
   }
   return out.concat(scored.slice(300).map(x => x[1]));
 }
+
+// ---------- shopping list: what you need, the offers for it in your chosen stores, and a cart to tick off in the store
+let shopList = store.get("shopList", []);      // [{id, text}]
+let cart = store.get("cart", []);              // [{key, item, name, price, note, unit, stores, img, valid, done}] or [{key, item, done}] without an offer
+const saveShop = () => { store.set("shopList", shopList); store.set("cart", cart); renderListBadge(); syncApp(); };
+// Common things whose name alone finds the wrong products ("maito" would also find milk chocolate).
+const SHOP_HINTS = {
+  "maito": {sub: "Maidot ja piimät"}, "piimä": {sub: "Maidot ja piimät"}, "juusto": {sub: "Juustot"}, "tuorejuusto": {sub: "Tuorejuustot"},
+  "jogurtti": {sub: "Jogurtit ja viilit"}, "rahka": {sub: "Rahkat ja vanukkaat"}, "kerma": {sub: "Kermat"}, "voi": {sub: "Voit ja levitteet", words: ["voi", "levite", "margariini"]},
+  "levite": {sub: "Voit ja levitteet"}, "muna": {sub: "Munat", words: ["kananmuna", "muna"]}, "kananmuna": {sub: "Munat", words: ["kananmuna", "muna"]}, "munat": {sub: "Munat", words: ["kananmuna", "muna"]},
+  "leipä": {sub: "Leivät"}, "ruisleipä": {sub: "Leivät"}, "paahtoleipä": {sub: "Leivät"}, "jauheliha": {sub: "Jauheliha"},
+  "kana": {sub: "Broileri ja kalkkuna", words: ["broiler", "kana"]}, "broileri": {sub: "Broileri ja kalkkuna", words: ["broiler", "kana"]},
+  "makkara": {sub: "Makkarat ja nakit"}, "nakki": {sub: "Makkarat ja nakit"}, "kinkku": {sub: "Leikkeleet"}, "leikkele": {sub: "Leikkeleet", words: ["leike", "kinkku", "salami"]},
+  "lohi": {sub: "Kala ja äyriäiset"}, "kala": {sub: "Kala ja äyriäiset", words: ["kala", "lohi", "seiti", "tonnikala", "silli"]},
+  "pasta": {sub: "Pasta, riisi ja nuudelit", words: ["pasta", "makaroni", "spagetti", "penne", "fusilli"]}, "makaroni": {sub: "Pasta, riisi ja nuudelit"}, "spagetti": {sub: "Pasta, riisi ja nuudelit"},
+  "riisi": {sub: "Pasta, riisi ja nuudelit"}, "nuudeli": {sub: "Pasta, riisi ja nuudelit", words: ["nuudel"]}, "peruna": {sub: "Perunat ja juurekset"},
+  "kahvi": {sub: "Kahvi"}, "tee": {sub: "Tee ja kaakao", words: ["tee"]}, "mehu": {sub: "Mehut, smoothiet ja glögit"}, "pizza": {sub: "Pizzat"},
+  "mysli": {sub: "Murot, myslit ja puurot"}, "murot": {sub: "Murot, myslit ja puurot", words: ["muro"]}, "kaurahiutale": {sub: "Murot, myslit ja puurot", words: ["kaurahiutale", "hiutale"]},
+  "vessapaperi": {sub: "Paperit ja kertakäyttö", words: ["wc-paperi", "wc paperi", "vessapaperi", "toalettipaperi"]}, "wc-paperi": {sub: "Paperit ja kertakäyttö", words: ["wc-paperi", "wc paperi", "vessapaperi", "toalettipaperi"]},
+  "talouspaperi": {sub: "Paperit ja kertakäyttö"}, "roskapussi": {sub: "Paperit ja kertakäyttö", words: ["roskapussi", "jätesäkki", "biojätepussi"]},
+  "tiskiaine": {sub: "Siivous ja pyykki", words: ["astianpesu", "tiski"]}, "astianpesuaine": {sub: "Siivous ja pyykki", words: ["astianpesu", "tiski"]},
+  "pyykinpesuaine": {sub: "Siivous ja pyykki", words: ["pyykinpesu", "pesuaine", "pesujauhe"]}, "pesuaine": {sub: "Siivous ja pyykki", words: ["pesuaine", "pesujauhe"]},
+  "shampoo": {sub: "Hiukset"}, "hammastahna": {sub: "Suihku, hygienia ja parranajo"}, "deodorantti": {sub: "Suihku, hygienia ja parranajo", words: ["deodorant", "deo"]},
+  "kissanruoka": {sub: "Kissat", words: ["kissa"]}, "koiranruoka": {sub: "Koirat", words: ["koira"]}
+};
+function findFor(text) {
+  const raw = norm(text).trim(), hint = SHOP_HINTS[raw] || SHOP_HINTS[raw.replace(/t$/, "")];
+  const words = hint && hint.words ? hint.words.map(norm) : [raw];
+  const pool = offers.filter(o => visible(o) && (o.pct || 0) >= state.minPct);
+  const nameHit = o => { const n = norm(o.name + " " + o.brand); return words.some(w => n.includes(w)); };
+  let list = pool.filter(o => nameHit(o) && (!hint || o.sub === hint.sub));
+  if (!list.length) list = pool.filter(nameHit);   // nothing in the expected family: show what the name finds
+  // A word of the name that starts or ends with what you wrote ("maito" in "kevytmaito", "maitojuoma") ranks first.
+  const starts = o => words.some(w => norm(o.name).split(/[\s,]+/).some(t => t.startsWith(w) || t.endsWith(w)));
+  const scored = list.map(o => [(starts(o) ? 4 : 0) + (o.pct || 0) / 25 + (isHit(o) ? 1 : 0), o]);
+  scored.sort((a, b) => b[0] - a[0] || (a[1].price || 99) - (b[1].price || 99));
+  return {count: list.length, top: scored.slice(0, 4).map(x => x[1])};
+}
+const cartKey = (item, o) => item.id + "|" + (o ? o.id : "-");
+function renderShop() {
+  $("listStores").textContent = state.on.size === STORES.length ? "kaikki " + STORES.length + " kauppaa" : state.on.size + " kauppaa";
+  $("shopList").innerHTML = shopList.length ? shopList.map(it => {
+    const f = findFor(it.text);
+    return `<li class="shopitem"><div class="head"><strong>${esc(it.text)}</strong><span class="found">${f.count ? f.count + " tarjousta" : ""}</span><button type="button" data-rmitem="${it.id}" aria-label="Poista ${esc(it.text)}">×</button></div>
+      ${f.top.length ? f.top.map(o => {
+        const inCart = cart.some(c => c.key === cartKey(it, o));
+        const stores = o.names.filter(n => state.on.has(n)), where = stores.length === 1 ? stores[0] : `${stores[0]} ja ${stores.length - 1} muuta`;
+        const qty = /(\d+) kpl = /.exec(o.note || "");
+        return `<div class="hitrow">${o.img ? `<img src="${esc(o.img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="noimg"></span>`}
+          <div class="t">${esc(o.name)}<small>${esc(where)}${endLabel(o, false) ? " · " + esc(endLabel(o, false)) : ""}</small></div>
+          <div class="p">${o.price ? (qty ? qty[1] + " kpl " : "") + fmt(o.price) + " €" : ""}<small>−${o.pct} %</small></div>
+          <button type="button" class="add" data-addcart="${it.id}|${o.i}" aria-pressed="${inCart}">${inCart ? "Korissa" : "Lisää koriin"}</button></div>`;
+      }).join("") + (f.count > 4 ? `<p class="none"><button type="button" class="linkbtn" data-showall="${esc(it.text)}">Näytä kaikki ${f.count}</button></p>` : "")
+      : `<p class="none">Ei tarjouksia valituista kaupoista. <button type="button" class="linkbtn" data-addplain="${it.id}">Lisää koriin ilman tarjousta</button></p>`}
+    </li>`;
+  }).join("") : `<li class="none">Lista on tyhjä. Kirjoita yllä, mitä tarvitset.</li>`;
+  renderCart();
+}
+function renderCart() {
+  const n = cart.filter(c => !c.done).length;
+  $("cartCount").textContent = cart.length ? `(${n})` : "";
+  if (!cart.length) { $("cartBody").innerHTML = `<p class="none">Ostoskori on tyhjä. Lisää tuotteita Lista-välilehdeltä.</p>`; return; }
+  const groups = new Map();
+  for (const c of cart) {
+    const g = !c.name ? "Ilman tarjousta" : (c.stores.length === 1 ? c.stores[0] : [...new Set(c.stores.map(chainOf))].join(", ") + " (useita kauppoja)");
+    if (!groups.has(g)) groups.set(g, []);
+    groups.get(g).push(c);
+  }
+  const order = [...groups.keys()].sort((a, b) => (a === "Ilman tarjousta") - (b === "Ilman tarjousta") || a.localeCompare(b, "fi"));
+  let total = 0;
+  $("cartBody").innerHTML = order.map(g => {
+    const rows = groups.get(g), sum = rows.filter(c => !c.done && c.price).reduce((a, c) => a + c.price, 0);
+    total += sum;
+    return `<section class="cartgroup"><h3>${esc(g)}${sum ? `<span>${fmt(Math.round(sum * 100) / 100)} €</span>` : ""}</h3>
+      ${rows.map(c => `<label class="cartline${c.done ? " done" : ""}"><input type="checkbox" data-done="${esc(c.key)}"${c.done ? " checked" : ""}>
+        <span class="t">${esc(c.name || c.item)}<small>${c.name ? esc([c.price ? fmt(c.price) + " €" : "", c.note, endLabel(c, false), "listalla: " + c.item].filter(Boolean).join(" · ")) : "Hae kaupasta"}</small></span>
+        <button type="button" class="rm" data-rmcart="${esc(c.key)}" aria-label="Poista korista">×</button></label>`).join("")}
+    </section>`;
+  }).join("") + (total ? `<div class="carttotal"><span>Yhteensä (ostamatta)</span><span>${fmt(Math.round(total * 100) / 100)} €</span></div>` : "")
+    + `<p class="formnote"><button type="button" class="linkbtn" id="cartClearDone">Poista ostetut</button> · <button type="button" class="linkbtn" id="cartClearAll">Tyhjennä kori</button></p>`;
+}
+function renderListBadge() {
+  const n = cart.filter(c => !c.done).length;
+  $("listBadge").hidden = !n; $("listBadge").textContent = n;
+}
+function setTab(t) {
+  $("tabList").setAttribute("aria-selected", t === "list"); $("tabCart").setAttribute("aria-selected", t === "cart");
+  $("listPane").hidden = t !== "list"; $("cartPane").hidden = t !== "cart";
+  $("listToCart").textContent = t === "list" ? "Näytä ostoskori" : "Takaisin listaan";
+  $("listClear").textContent = t === "list" ? "Tyhjennä lista" : "Tyhjennä kori";
+  if (t === "cart") renderCart();
+}
+$("listDrawer").querySelector(".tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) setTab(b.dataset.tab); });
+$("listToCart").addEventListener("click", () => setTab($("listPane").hidden ? "list" : "cart"));
+$("listClear").addEventListener("click", () => {
+  if ($("listPane").hidden) cart = []; else shopList = [];
+  saveShop(); renderShop();
+});
+$("listForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const parts = e.target.item.value.split(/[,;\n]+/).map(x => x.trim()).filter(Boolean);
+  for (const text of parts) if (!shopList.some(i => norm(i.text) === norm(text))) shopList.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text: text.slice(0, 40)});
+  e.target.item.value = ""; saveShop(); renderShop();
+});
+$("listDrawer").addEventListener("click", e => {
+  const t = e.target;
+  const rm = t.closest("[data-rmitem]");
+  if (rm) { shopList = shopList.filter(i => i.id !== rm.dataset.rmitem); saveShop(); renderShop(); return; }
+  const add = t.closest("[data-addcart]");
+  if (add) {
+    const [id, i] = add.dataset.addcart.split("|"), it = shopList.find(x => x.id === id), o = byI(+i), key = cartKey(it, o);
+    if (cart.some(c => c.key === key)) cart = cart.filter(c => c.key !== key);
+    else {
+      const stores = o.names.filter(n => state.on.has(n));
+      cart.push({key, item: it.text, name: o.name, price: o.price, note: o.note, valid: o.valid, img: o.img, stores: stores.length ? stores : o.names, done: false});
+      bump(o, 2);
+    }
+    saveShop(); renderShop(); return;
+  }
+  const plain = t.closest("[data-addplain]");
+  if (plain) { const it = shopList.find(x => x.id === plain.dataset.addplain); if (!cart.some(c => c.key === cartKey(it))) cart.push({key: cartKey(it), item: it.text, done: false}); saveShop(); renderShop(); return; }
+  const all = t.closest("[data-showall]");
+  if (all) { state.q = all.dataset.showall; $("q").value = state.q; state.cat = ""; state.sub = ""; state.page = 1; closeDrawers(); refresh(); document.querySelector(".shop").scrollIntoView(); return; }
+  const rc = t.closest("[data-rmcart]");
+  if (rc) { e.preventDefault(); cart = cart.filter(c => c.key !== rc.dataset.rmcart); saveShop(); renderCart(); return; }
+  if (t.id === "cartClearDone") { cart = cart.filter(c => !c.done); saveShop(); renderCart(); return; }
+  if (t.id === "cartClearAll") { cart = []; saveShop(); renderShop(); return; }
+});
+$("listDrawer").addEventListener("change", e => {
+  const d = e.target.closest("[data-done]"); if (!d) return;
+  const c = cart.find(x => x.key === d.dataset.done); if (c) c.done = d.checked;
+  saveShop(); renderCart();
+});
 
 // ---------- filter drawer footer
 $("clearFilters").addEventListener("click", () => {
