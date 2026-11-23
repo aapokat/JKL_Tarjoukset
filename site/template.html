@@ -428,6 +428,10 @@ button.chip{cursor:pointer}
   <span id="iosHintText">Lisää tarjoukset iPhonen aloitusnäyttöön: paina alhaalla <strong>Jaa</strong>-painiketta <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Jaa" style="vertical-align:-3px"><path d="M12 3v12M8 7l4-4 4 4M5 12v8h14v-8"/></svg> ja valitse <strong>Lisää Koti-valikkoon</strong>. Sivu aukeaa silloin omana sovelluksenaan.</span>
   <span class="row"><button class="pill small" type="button" id="iosHintOk">Selvä</button></span>
 </div>
+<div class="toast asks" id="updateNote" role="dialog" aria-labelledby="updateText" hidden>
+  <span id="updateText"></span>
+  <span class="row"><button class="pill small ghost" type="button" id="updateLater">Myöhemmin</button><a class="pill small" id="updateGet" href="https://github.com/aapokat/JKL_Tarjoukset/releases/download/android-latest/jkl-tarjoukset.apk">Lataa päivitys</a></span>
+</div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="watchDrawer" aria-labelledby="watchTitle" aria-modal="true" role="dialog">
   <header><h2 id="watchTitle">Hintavahdit</h2><button class="iconbtn" type="button" data-close aria-label="Sulje"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
@@ -606,7 +610,7 @@ function boot(data) {
   const dates = Object.values(data.sources || {}).filter(Boolean).sort();
   $("heroSub").textContent = "Vähintään " + (data.minPct || 20) + " % alennukset " + STORES.length + " kaupasta." + (dates.length ? " Päivitetty " + when(dates[dates.length - 1]) + "." : "");
   fromHash();
-  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits(); askTips(); iosHint();
+  renderCollage(); initWatchForm(); renderSide(); renderSources(); renderWatches(); render(); renderRail(); initApp(); syncApp(); checkNewHits(); askTips(); iosHint(); checkAppUpdate();
 }
 // Links from phone notifications: #hits = alert hits, #fav = saved offers, #tips = offers like the ones you look at.
 function fromHash() {
@@ -1250,6 +1254,38 @@ function iosHint() {
   setTimeout(() => { $("iosHint").hidden = false; }, 4000);
 }
 $("iosHintOk").addEventListener("click", () => { $("iosHint").hidden = true; store.set("iosHintSeen", true); });
+
+// ---------- app updates
+// 1) The first app versions could not show alet.aaje.fi themselves and opened it in the phone's browser.
+//    Chrome then tells the page which app sent it here (document.referrer "android-app://fi.aaje.tarjoukset").
+// 2) Newer versions report their version; the page compares it with the newest APK on GitHub once a day.
+function showUpdate(text) {
+  if (!$("hitToast").hidden || !$("tipsAsk").hidden) return;
+  $("updateText").textContent = text;
+  $("updateNote").hidden = false;
+}
+$("updateLater").addEventListener("click", () => { $("updateNote").hidden = true; store.set("updateLater", Date.now()); });
+async function checkAppUpdate() {
+  if (Date.now() - store.get("updateLater", 0) < 864e5) return;
+  if (!APP && /^android-app:\/\/fi\.aaje\.tarjoukset/.test(document.referrer)) {
+    showUpdate("JKL Tarjoukset -sovelluksesi on vanha eikä enää avaa tarjouksia itse. Asenna päivitys vanhan päälle, niin suosikit ja vahdit säilyvät.");
+    return;
+  }
+  if (!APP) return;
+  let mine = "";
+  try { mine = APP.version(); } catch (e) { return; }
+  try {
+    const last = store.get("updateChecked", 0);
+    let newest = store.get("updateNewest", "");
+    if (Date.now() - last > 864e5 || !newest) {
+      const r = await fetch("https://api.github.com/repos/aapokat/JKL_Tarjoukset/releases/tags/android-latest");
+      newest = ((await r.json()).body || "").match(/versio (\d+\.\d+\.\d+)/)?.[1] || "";
+      store.set("updateChecked", Date.now()); store.set("updateNewest", newest);
+    }
+    const n = v => v.split(".").map(Number).reduce((a, x) => a * 10000 + x, 0);
+    if (newest && n(newest) > n(mine)) showUpdate(`Sovelluksesta on uusi versio (${newest}, sinulla ${mine}). Asenna se vanhan päälle, niin suosikit ja vahdit säilyvät.`);
+  } catch (e) {}
+}
 
 // ---------- fresh data: a page (or the app) left open for over 5 hours reloads itself when it is looked at again
 const LOADED_AT = Date.now(), STALE_MS = 5 * 3600e3;
