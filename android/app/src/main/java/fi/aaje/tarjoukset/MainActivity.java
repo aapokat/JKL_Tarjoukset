@@ -27,7 +27,7 @@ import androidx.core.app.NotificationManagerCompat;
  * The page talks to the app through window.TarjousApp (see Bridge below).
  */
 public class MainActivity extends Activity {
-    static final String SITE = "https://aapokat.github.io/JKL_Tarjoukset/";
+    static final String SITE = "https://alet.aaje.fi/";   // was https://aapokat.github.io/JKL_Tarjoukset/ (now forwards here)
     static final String HOST = "aapokat.github.io";
     static final String OWN_DOMAIN = "alet.aaje.fi";   // GitHub forwards the github.io address here once the domain is set
 
