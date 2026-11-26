@@ -43,10 +43,6 @@ jobs:
           fi
           gradle -p android assembleRelease --no-daemon --stacktrace
           cp android/app/build/outputs/apk/release/app-release.apk jkl-tarjoukset.apk
-      - uses: actions/upload-artifact@v4
-        with:
-          name: jkl-tarjoukset-apk
-          path: jkl-tarjoukset.apk
       - name: Publish on the fixed download address
         env:
           GH_TOKEN: ${{ github.token }}
